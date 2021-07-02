@@ -7,7 +7,7 @@
   "license": "MIT",
   "private": false,
   "scripts": {
-    "dev": "nodemon server.ts",
+    "dev": "nodemon --legacy-watch server.ts",
     "build": "tsc --project ./"
   },
   "devDependencies": {

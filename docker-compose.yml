@@ -1,0 +1,34 @@
+version: "3.7"
+
+services:
+    backend:
+        build: ./backend
+        depends_on:
+            - db
+        restart: always
+        environment:
+            BACKEND_PORT: ${BACKEND_PORT}
+            DB_PORT: ${DB_PORT}
+            DB_PWD: ${DB_PWD}
+            DB_USER: ${DB_USER}
+            DB_NAME: ${DB_NAME}
+        ports:
+            - ${BACKEND_PORT}:${BACKEND_PORT}
+        command: yarn dev
+        volumes:
+            - ./backend:/backend
+
+    db:
+        image: postgres:latest
+        restart: always
+        ports:
+            - ${DB_PORT}:53432
+        environment:
+            POSTGRES_PASSWORD: ${DB_PWD}
+            POSTGRES_USER: ${DB_USER}
+            POSTGRES_DB: ${DB_NAME}
+        volumes:
+            - ee5209-mysql-data:/var/lib/postgresql/data
+
+volumes:
+    ee5209-mysql-data:
