@@ -8,10 +8,11 @@ services:
         restart: always
         environment:
             BACKEND_PORT: ${BACKEND_PORT}
-            DB_PORT: ${DB_PORT}
-            DB_PWD: ${DB_PWD}
-            DB_USER: ${DB_USER}
-            DB_NAME: ${DB_NAME}
+            PGUSER: ${PGUSER}
+            PGHOST: ${PGHOST}
+            PGPASSWORD: ${PGPASSWORD}
+            PGDATABASE: ${PGDATABASE}
+            PGPORT: ${PGPORT}
         ports:
             - ${BACKEND_PORT}:${BACKEND_PORT}
         command: yarn dev
@@ -24,9 +25,9 @@ services:
         ports:
             - ${DB_PORT}:53432
         environment:
-            POSTGRES_PASSWORD: ${DB_PWD}
-            POSTGRES_USER: ${DB_USER}
-            POSTGRES_DB: ${DB_NAME}
+            POSTGRES_PASSWORD: ${PGPASSWORD}
+            POSTGRES_USER: ${PGUSER}
+            POSTGRES_DB: ${PGDATABASE}
         volumes:
             - ee5209-mysql-data:/var/lib/postgresql/data
 
