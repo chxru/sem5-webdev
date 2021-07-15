@@ -1,6 +1,51 @@
-import { Router } from "express";
-import { check } from "express-validator";
+import express, { Router } from "express";
+import {
+  check,
+  checkSchema,
+  Schema,
+  validationResult,
+} from "express-validator";
+import { HandleRegister } from "../controllers/auth";
 import { pg } from "../database/knex";
+
+// schemas
+const signup_schema: Schema = {
+  email: {
+    in: "body",
+    errorMessage: "Invalid email",
+    isEmail: true,
+    trim: true,
+  },
+  fname: {
+    in: "body",
+    isString: true,
+    errorMessage: "Invalid First Name",
+    trim: true,
+  },
+  lname: {
+    in: "body",
+    isString: true,
+    errorMessage: "Invalid Last Name",
+    trim: true,
+  },
+  username: {
+    in: "body",
+    isString: true,
+    errorMessage: "Invalid username",
+    isLength: {
+      errorMessage: "Username must be atleast 5 letters",
+      options: {
+        min: 5,
+      },
+    },
+    trim: true,
+  },
+  password: {
+    in: "body",
+    isStrongPassword: true,
+    errorMessage: "Password isn't strong enough",
+  },
+};
 
 const router = Router();
 
@@ -21,8 +66,18 @@ router.post(
   }
 );
 
-router.post("/create", (req, res) => {
-  res.sendStatus(200);
-});
+router.post(
+  "/create",
+  checkSchema(signup_schema),
+  (req: express.Request, res: express.Response) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    HandleRegister(req.body);
+    res.sendStatus(200);
+  }
+);
 
 export default router;

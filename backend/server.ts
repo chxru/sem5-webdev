@@ -5,6 +5,8 @@ import { logger } from "./util/logger";
 import authroutes from "./routes/auth";
 
 const app = express();
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.use("/auth", authroutes);
 
