@@ -5,8 +5,10 @@ import {
   Schema,
   validationResult,
 } from "express-validator";
-import { HandleRegister } from "../controllers/auth";
-import { pg } from "../database/knex";
+
+import { HandleLogin, HandleRegister } from "../controllers/auth";
+
+import { logger } from "../util/logger";
 
 // schemas
 const signup_schema: Schema = {
@@ -47,35 +49,61 @@ const signup_schema: Schema = {
   },
 };
 
+const signin_schema: Schema = {
+  username: {
+    in: "body",
+    errorMessage: "Invalid email",
+    isEmail: true,
+    trim: true,
+  },
+  password: {
+    in: "body",
+    isString: true,
+    errorMessage: "Invalid password",
+  },
+};
+
 const router = Router();
 
 router.post(
   "/login",
-  check("email").isEmail().normalizeEmail().withMessage("Invalid email format"),
-  check("password")
-    .trim()
-    .escape()
-    .isLength({ min: 6 })
-    .withMessage("Invalid password"),
-  (req, res) => {
-    pg.select("id")
-      .from("test")
-      .then((r) => console.log(r))
-      .catch((e) => console.error(e));
-    res.sendStatus(200);
+  checkSchema(signin_schema),
+  async (req: express.Request, res: express.Response) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    try {
+      const { res: result, err } = await HandleLogin(
+        req.body.username,
+        req.body.password
+      );
+      res.status(200).json({ result, err });
+    } catch (error) {
+      console.error(error);
+      res.sendStatus(500);
+    }
   }
 );
 
 router.post(
   "/create",
   checkSchema(signup_schema),
-  (req: express.Request, res: express.Response) => {
+  async (req: express.Request, res: express.Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    HandleRegister(req.body);
+    try {
+      await HandleRegister(req.body);
+    } catch (error) {
+      logger(`Error occured while creating user ${req.body.email}`, "error");
+      console.error(error);
+      res.sendStatus(500);
+    }
+
     res.sendStatus(200);
   }
 );

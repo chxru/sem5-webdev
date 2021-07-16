@@ -20,6 +20,17 @@ const HashPwd = (pwd: string) => {
   });
 };
 
+const ComparePwd = (pwd: string, hash: string): Promise<boolean> => {
+  return new Promise((resolve, reject) => {
+    bcrypt.compare(pwd, hash, (err, res) => {
+      if (err) {
+        reject(err);
+      }
+      resolve(res);
+    });
+  });
+};
+
 /**
  * Handle new user registration process
  *
@@ -53,4 +64,20 @@ const HandleRegister = async (data: RegisterData) => {
   }
 };
 
-export { HandleRegister };
+const HandleLogin = async (
+  username: string,
+  password: string
+): Promise<{ res: boolean; err?: string }> => {
+  try {
+    const savedHash = await pg("users.auth").where({ username }).select("pwd");
+
+    const res = await ComparePwd(password, savedHash[0].pwd);
+    let err = !res ? "Wrong username/password" : undefined;
+
+    return { res, err };
+  } catch (error) {
+    return { res: false, err: error };
+  }
+};
+
+export { HandleLogin, HandleRegister };
