@@ -1,0 +1,9 @@
+{
+    "recommendations": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "mtxr.sqltools",
+        "jgclark.vscode-todo-highlight",
+        "ms-azuretools.vscode-docker"
+    ]
+}
