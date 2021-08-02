@@ -39,20 +39,21 @@ const LoginPage: React.FC = () => {
         body: JSON.stringify(values),
       });
 
-      const response: { result: boolean; err?: string } = await request.json();
-
-      if (response.result) {
+      if (request.ok) {
         notify.NewAlert({ msg: "User authenticated", status: "success" });
       } else {
+        const { err }: { err: string } = await request.json();
+
         notify.NewAlert({
           msg: "User authentication failed",
-          description: response.err,
+          description: err || "",
           status: "error",
         });
       }
     } catch (error) {
       notify.NewAlert({
         msg: "Something is wrong",
+        description: error,
         status: "error",
       });
     }

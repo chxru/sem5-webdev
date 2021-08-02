@@ -1,4 +1,5 @@
 import * as bcrypt from "bcrypt";
+import * as jwt from "jsonwebtoken";
 import { pg } from "../database/knex";
 
 interface RegisterData {
@@ -32,6 +33,30 @@ const ComparePwd = (pwd: string, hash: string): Promise<boolean> => {
 };
 
 /**
+ * Generate Json web token
+ *
+ * @param {string} username
+ * @return {*}  {Promise<string>}
+ */
+const GenerateJWT = (username: string): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    jwt.sign(
+      { username },
+      process.env.JWT_TOKEN || "justtobypasstypeerror :)",
+      { expiresIn: "1d" },
+      (err, token) => {
+        if (!!token) {
+          resolve(token);
+        }
+
+        // reject if no token is generated
+        reject(err);
+      }
+    );
+  });
+};
+
+/**
  * Handle new user registration process
  *
  * @param {RegisterData} data new users details
@@ -59,24 +84,47 @@ const HandleRegister = async (data: RegisterData) => {
         pwd: hash,
       });
     });
+
+    // Generate JWT
+    const token = await GenerateJWT(data.email);
+    return { jwt: token };
   } catch (error) {
-    console.error(error);
+    return { err: error };
   }
 };
 
+/**
+ * Handle user authentication process
+ *
+ * @param {string} username email at this stage
+ * @param {string} password
+ * @return {*}  {Promise<{ jwt?: string; err?: string }>}
+ */
 const HandleLogin = async (
   username: string,
   password: string
-): Promise<{ res: boolean; err?: string }> => {
+): Promise<{ jwt?: string; err?: string }> => {
   try {
     const savedHash = await pg("users.auth").where({ username }).select("pwd");
 
-    const res = await ComparePwd(password, savedHash[0].pwd);
-    let err = !res ? "Wrong username/password" : undefined;
+    if (savedHash.length === 0) {
+      throw new Error("Username not correct");
+    }
 
-    return { res, err };
+    const res = await ComparePwd(password, savedHash[0].pwd);
+
+    if (!res) {
+      return { err: "Wrong username/password" };
+    }
+
+    try {
+      const token = await GenerateJWT(username);
+      return { jwt: token };
+    } catch (err) {
+      return { err };
+    }
   } catch (error) {
-    return { res: false, err: error };
+    return { err: error };
   }
 };
 

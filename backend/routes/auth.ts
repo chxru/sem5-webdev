@@ -1,10 +1,5 @@
 import express, { Router } from "express";
-import {
-  check,
-  checkSchema,
-  Schema,
-  validationResult,
-} from "express-validator";
+import { checkSchema, Schema, validationResult } from "express-validator";
 
 import { HandleLogin, HandleRegister } from "../controllers/auth";
 
@@ -75,11 +70,25 @@ router.post(
     }
 
     try {
-      const { res: result, err } = await HandleLogin(
+      const { jwt, err } = await HandleLogin(
         req.body.username,
         req.body.password
       );
-      res.status(200).json({ result, err });
+
+      // set cookie
+      res.cookie("token", jwt, {
+        domain: "localhost:3001",
+        httpOnly: true,
+        maxAge: 3600 * 1000,
+        secure: true,
+      });
+
+      // send response
+      if (err) {
+        res.status(503).json({ err: err.toString() });
+      } else {
+        res.sendStatus(200);
+      }
     } catch (error) {
       console.error(error);
       res.sendStatus(500);
@@ -97,7 +106,22 @@ router.post(
     }
 
     try {
-      await HandleRegister(req.body);
+      const { jwt, err } = await HandleRegister(req.body);
+
+      // set cookie
+      res.cookie("token", jwt, {
+        domain: "localhost:3001",
+        httpOnly: true,
+        maxAge: 3600 * 1000,
+        secure: true,
+      });
+
+      // send response
+      if (err) {
+        res.status(503).json({ err: err.toString() });
+      } else {
+        res.sendStatus(200);
+      }
     } catch (error) {
       logger(`Error occured while creating user ${req.body.email}`, "error");
       console.error(error);
