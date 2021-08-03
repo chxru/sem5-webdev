@@ -1,7 +1,6 @@
+import React from "react";
 import {
-  Avatar,
   Box,
-  Collapse,
   Drawer,
   DrawerContent,
   DrawerOverlay,
@@ -9,15 +8,9 @@ import {
   Heading,
   Icon,
   IconButton,
-  Input,
-  InputGroup,
-  InputLeftElement,
-  Text,
   useDisclosure,
 } from "@chakra-ui/react";
-import { FaBell, FaClipboardCheck, FaRss } from "react-icons/fa";
 import { FiMenu, FiHome, FiUserPlus, FiSearch, FiLogOut } from "react-icons/fi";
-import React from "react";
 import { IconType } from "react-icons/lib";
 
 interface sidebarProps {
@@ -70,7 +63,7 @@ const SidebarContent = (props: {
       overflowX="hidden"
       overflowY="auto"
       bg="white"
-      w="72"
+      w={{ base: 54, md: 60, lg: 72 }}
       {...props}
     >
       <Flex mt="50px" align="center">
@@ -81,7 +74,7 @@ const SidebarContent = (props: {
       <Flex
         direction="column"
         as="nav"
-        mt="50px"
+        mt="25px"
         fontSize="sm"
         color="gray.600"
         aria-label="Main Navigation"
@@ -98,7 +91,7 @@ const SidebarContent = (props: {
 const Sidebar: React.FC<sidebarProps> = ({ children }) => {
   const sidebar = useDisclosure();
   return (
-    <Box as="section" bg="gray.50" minH="100vh">
+    <Box as="section" bg="gray.50" minH="100vh" backgroundColor="#f8f8f8">
       <SidebarContent display={{ base: "none", md: "unset" }} />
       <Drawer
         isOpen={sidebar.isOpen}
@@ -110,7 +103,7 @@ const Sidebar: React.FC<sidebarProps> = ({ children }) => {
           <SidebarContent w="full" borderRight="none" />
         </DrawerContent>
       </Drawer>
-      <Box ml={{ base: 0, md: 60 }} transition=".3s ease">
+      <Box ml={{ base: 0, md: 60, lg: 72 }} transition=".3s ease">
         <Flex
           display={{ base: "flex", md: "none" }}
           as="header"
