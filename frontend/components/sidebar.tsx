@@ -1,4 +1,5 @@
 import React from "react";
+import { useRouter } from "next/router";
 import {
   Box,
   Drawer,
@@ -17,8 +18,13 @@ interface sidebarProps {
   children: React.ReactNode;
 }
 
-const NavItem = (props: { children: React.ReactNode; icon: IconType }) => {
-  const { icon, children, ...rest } = props;
+const NavItem = (props: {
+  children: React.ReactNode;
+  icon: IconType;
+  route: string;
+}) => {
+  const router = useRouter();
+  const { icon, children, route, ...rest } = props;
   return (
     <Flex
       align="center"
@@ -28,6 +34,9 @@ const NavItem = (props: { children: React.ReactNode; icon: IconType }) => {
       role="group"
       fontWeight="semibold"
       transition=".15s ease"
+      onClick={() => {
+        router.push(route);
+      }}
       {...rest}
     >
       {icon && (
@@ -79,10 +88,18 @@ const SidebarContent = (props: {
         color="gray.600"
         aria-label="Main Navigation"
       >
-        <NavItem icon={FiHome}>Dashboard</NavItem>
-        <NavItem icon={FiUserPlus}>Add Patient</NavItem>
-        <NavItem icon={FiSearch}>Search</NavItem>
-        <NavItem icon={FiLogOut}>Signout</NavItem>
+        <NavItem icon={FiHome} route="/">
+          Dashboard
+        </NavItem>
+        <NavItem icon={FiUserPlus} route="/patient/new">
+          Add Patient
+        </NavItem>
+        <NavItem icon={FiSearch} route="/search">
+          Search
+        </NavItem>
+        <NavItem icon={FiLogOut} route="/login">
+          Signout
+        </NavItem>
       </Flex>
     </Box>
   );
