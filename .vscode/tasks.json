@@ -1,0 +1,21 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "npm",
+            "script": "dev",
+            "path": "frontend/",
+            "problemMatcher": [],
+            "label": "Frontend dev",
+            "detail": "next dev"
+        },
+        {
+            "type": "npm",
+            "script": "dev:local",
+            "path": "backend/",
+            "problemMatcher": [],
+            "label": "Backend dev local",
+            "detail": "yarn dbinit && nodemon -r dotenv/config server.ts dotenv_config_path=../.env"
+        }
+    ]
+}
