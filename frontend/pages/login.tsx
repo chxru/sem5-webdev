@@ -39,9 +39,7 @@ const LoginPage: React.FC = () => {
         body: JSON.stringify(values),
       });
 
-      if (request.ok) {
-        notify.NewAlert({ msg: "User authenticated", status: "success" });
-      } else {
+      if (!request.ok) {
         const { err }: { err: string } = await request.json();
 
         notify.NewAlert({
@@ -49,7 +47,15 @@ const LoginPage: React.FC = () => {
           description: err || "",
           status: "error",
         });
+
+        return;
       }
+
+      notify.NewAlert({ msg: "User authenticated", status: "success" });
+      const body = await request.json();
+
+      // TODO: Save access token in memory or localstorage
+      console.log(body);
     } catch (error) {
       notify.NewAlert({
         msg: "Something is wrong",

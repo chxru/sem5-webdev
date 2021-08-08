@@ -18,24 +18,23 @@ router.post(
     }
 
     try {
-      const { jwt, err } = await HandleLogin(
+      const { access_token, refresh_token, err } = await HandleLogin(
         req.body.username,
         req.body.password
       );
-
-      // set cookie
-      res.cookie("token", jwt, {
-        domain: "localhost:3001",
-        httpOnly: true,
-        maxAge: 3600 * 1000,
-        secure: true,
-      });
 
       // send response
       if (err) {
         res.status(503).json({ err: err.toString() });
       } else {
-        res.sendStatus(200);
+        // set refresh token in cookie
+        res.cookie("token", refresh_token, {
+          domain: "localhost:3001",
+          httpOnly: true,
+          maxAge: 60 * 60 * 24 * 7, // 7 days
+          secure: true, // https or localhost
+        });
+        res.status(200).json(access_token);
       }
     } catch (error) {
       console.error(error);
@@ -54,29 +53,28 @@ router.post(
     }
 
     try {
-      const { jwt, err } = await HandleRegister(req.body);
-
-      // set cookie
-      res.cookie("token", jwt, {
-        domain: "localhost:3001",
-        httpOnly: true,
-        maxAge: 3600 * 1000,
-        secure: true,
-      });
+      const { access_token, refresh_token, err } = await HandleRegister(
+        req.body
+      );
 
       // send response
       if (err) {
         res.status(503).json({ err: err.toString() });
       } else {
-        res.sendStatus(200);
+        // set refresh token in cookie
+        res.cookie("token", refresh_token, {
+          domain: "localhost:3001",
+          httpOnly: true,
+          maxAge: 60 * 60 * 24 * 7, // 7 days
+          secure: true, // https or localhost
+        });
+        res.status(200).json(access_token);
       }
     } catch (error) {
       logger(`Error occured while creating user ${req.body.email}`, "error");
       console.error(error);
       res.sendStatus(500);
     }
-
-    res.sendStatus(200);
   }
 );
 

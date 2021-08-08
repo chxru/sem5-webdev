@@ -9,6 +9,12 @@ interface RegisterData {
   password: string;
 }
 
+/**
+ * Generate hash of the user's password
+ *
+ * @param {string} pwd
+ * @return {*}
+ */
 const HashPwd = (pwd: string) => {
   const saltRounds = 10;
   return new Promise((resolve, reject) => {
@@ -21,6 +27,13 @@ const HashPwd = (pwd: string) => {
   });
 };
 
+/**
+ * Compare given password with the hash
+ *
+ * @param {string} pwd
+ * @param {string} hash
+ * @return {*}  {Promise<boolean>}
+ */
 const ComparePwd = (pwd: string, hash: string): Promise<boolean> => {
   return new Promise((resolve, reject) => {
     bcrypt.compare(pwd, hash, (err, res) => {
@@ -33,17 +46,45 @@ const ComparePwd = (pwd: string, hash: string): Promise<boolean> => {
 };
 
 /**
+ * Save refresh token in database users.token
+ *
+ * @param {number} id
+ * @param {string} token
+ */
+const SaveRefreshToken = async (id: number, token: string) => {
+  // create a date for now+7days
+  const expires = new Date();
+  expires.setDate(expires.getDate() + 7);
+
+  await pg("users.tokens").insert({ id, token, expires });
+};
+
+/**
  * Generate Json web token
  *
  * @param {string} username
+ * @param {("refresh" | "access")} type
  * @return {*}  {Promise<string>}
  */
-const GenerateJWT = (username: string): Promise<string> => {
+const GenerateJWT = (
+  username: string,
+  type: "refresh" | "access"
+): Promise<string> => {
   return new Promise((resolve, reject) => {
+    let token =
+      type === "refresh"
+        ? process.env.JWT_REFRESH_TOKEN
+        : process.env.JWT_ACCESS_TOKEN;
+
+    // FIXME: Bad practice
+    if (!token) {
+      token = "justtobypasstypeerror :)";
+    }
+
     jwt.sign(
       { username },
-      process.env.JWT_TOKEN || "justtobypasstypeerror :)",
-      { expiresIn: "1d" },
+      token,
+      { expiresIn: token === "refresh" ? "7d" : 60 * 15 }, // refresh token 7days, access token 15mins
       (err, token) => {
         if (!!token) {
           resolve(token);
@@ -63,7 +104,7 @@ const GenerateJWT = (username: string): Promise<string> => {
  */
 const HandleRegister = async (data: RegisterData) => {
   try {
-    await pg.transaction(async (trx) => {
+    const id: number = await pg.transaction(async (trx) => {
       // insert user data to database
       const uid = await trx("users.data").insert(
         {
@@ -83,11 +124,18 @@ const HandleRegister = async (data: RegisterData) => {
         username: data.email,
         pwd: hash,
       });
+
+      return uid[0];
     });
 
     // Generate JWT
-    const token = await GenerateJWT(data.email);
-    return { jwt: token };
+    const access_token = await GenerateJWT(data.email, "access");
+    const refresh_token = await GenerateJWT(data.email, "refresh");
+
+    // save token in db
+    await SaveRefreshToken(id, refresh_token);
+
+    return { access_token, refresh_token };
   } catch (error) {
     return { err: error };
   }
@@ -103,26 +151,26 @@ const HandleRegister = async (data: RegisterData) => {
 const HandleLogin = async (
   username: string,
   password: string
-): Promise<{ jwt?: string; err?: string }> => {
+): Promise<{ access_token?: string; refresh_token?: string; err?: string }> => {
   try {
-    const savedHash = await pg("users.auth").where({ username }).select("pwd");
+    const user = await pg("users.auth").where({ username }).select("pwd", "id");
 
-    if (savedHash.length === 0) {
+    if (user.length === 0) {
       throw new Error("Username not correct");
     }
 
-    const res = await ComparePwd(password, savedHash[0].pwd);
+    const res = await ComparePwd(password, user[0].pwd);
 
     if (!res) {
       return { err: "Wrong username/password" };
     }
 
-    try {
-      const token = await GenerateJWT(username);
-      return { jwt: token };
-    } catch (err) {
-      return { err };
-    }
+    const access_token = await GenerateJWT(username, "access");
+    const refresh_token = await GenerateJWT(username, "refresh");
+
+    await SaveRefreshToken(user[0].id, refresh_token);
+
+    return { access_token, refresh_token };
   } catch (error) {
     return { err: error };
   }
