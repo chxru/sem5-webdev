@@ -31,7 +31,7 @@ const LoginPage: React.FC = () => {
   // form submit
   const onSubmit = async (values: LoginForm) => {
     try {
-      const request = await fetch("http://localhost:3001/auth/login", {
+      const request = await fetch("api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json;charset=utf-8",

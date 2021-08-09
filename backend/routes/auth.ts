@@ -11,10 +11,16 @@ const router = Router();
 router.post(
   "/login",
   checkSchema(signin_schema),
-  async (req: express.Request, res: express.Response) => {
+  async (req: express.Request, res: express.Response<API.LoginResponse>) => {
+    // schema validation
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      // concat array of errors to one string
+      const err = errors
+        .array()
+        .map((i) => `${i.param}: ${i.msg}`)
+        .join("\n");
+      return res.status(400).json({ success: false, err });
     }
 
     try {
@@ -25,20 +31,16 @@ router.post(
 
       // send response
       if (err) {
-        res.status(503).json({ err: err.toString() });
+        res.status(200).json({ success: false, err: err.toString() });
       } else {
-        // set refresh token in cookie
-        res.cookie("token", refresh_token, {
-          domain: "localhost:3001",
-          httpOnly: true,
-          maxAge: 60 * 60 * 24 * 7, // 7 days
-          secure: true, // https or localhost
+        res.status(200).json({
+          success: true,
+          access: access_token,
+          refresh: refresh_token,
         });
-        res.status(200).json(access_token);
       }
-    } catch (error) {
-      console.error(error);
-      res.sendStatus(500);
+    } catch (err) {
+      res.status(500).json({ success: false, err });
     }
   }
 );
