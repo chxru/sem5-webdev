@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useContext } from "react";
 import Head from "next/head";
 import { Box, Container, Flex, Heading, Text } from "@chakra-ui/react";
+import AuthContext from "../contexts/auth-context";
 
 const IndexPage: React.FC = () => {
+  const authContext = useContext(AuthContext);
   return (
     <>
       <Head>
@@ -13,7 +15,7 @@ const IndexPage: React.FC = () => {
 
       <Container overflowY="auto" maxW="4xl">
         <Heading mt={{ base: "0", md: "35px" }} size="md" fontWeight="semibold">
-          Welcome User
+          Welcome {authContext.user?.fname}
         </Heading>
 
         <Flex

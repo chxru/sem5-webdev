@@ -1,4 +1,5 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
+import { useRouter } from "next/router";
 import {
   Box,
   Button,
@@ -13,7 +14,9 @@ import {
 } from "@chakra-ui/react";
 import { useForm } from "react-hook-form";
 import Head from "next/head";
+
 import NotifyContext from "../contexts/notify-context";
+import AuthContext from "../contexts/auth-context";
 
 interface LoginForm {
   username: string;
@@ -27,6 +30,15 @@ const LoginPage: React.FC = () => {
     register,
   } = useForm<LoginForm>();
   const notify = useContext(NotifyContext);
+  const authContext = useContext(AuthContext);
+  const router = useRouter();
+
+  useEffect(() => {
+    // return to main page if an access token is already available
+    if (!!authContext.token) {
+      router.push("/");
+    }
+  }, [authContext.token, router]);
 
   // form submit
   const onSubmit = async (values: LoginForm) => {
@@ -52,10 +64,13 @@ const LoginPage: React.FC = () => {
       }
 
       notify.NewAlert({ msg: "User authenticated", status: "success" });
-      const body = await request.json();
 
-      // TODO: Save access token in memory or localstorage
-      console.log(body);
+      const body: { success: boolean; user: API.UserData; access: string } =
+        await request.json();
+
+      router.push("/").then(() => {
+        authContext.onSignIn(body.access, body.user);
+      });
     } catch (error) {
       notify.NewAlert({
         msg: "Something is wrong",

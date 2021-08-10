@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import { useRouter } from "next/router";
 import {
   Box,
@@ -13,6 +13,7 @@ import {
 } from "@chakra-ui/react";
 import { FiMenu, FiHome, FiUserPlus, FiSearch, FiLogOut } from "react-icons/fi";
 import { IconType } from "react-icons/lib";
+import AuthContext from "../contexts/auth-context";
 
 interface sidebarProps {
   children: React.ReactNode;
@@ -24,6 +25,7 @@ const NavItem = (props: {
   route: string;
 }) => {
   const router = useRouter();
+  const authContext = useContext(AuthContext);
   const { icon, children, route, ...rest } = props;
   return (
     <Flex
@@ -35,6 +37,12 @@ const NavItem = (props: {
       fontWeight="semibold"
       transition=".15s ease"
       onClick={() => {
+        if (route === "signout") {
+          authContext.onSignOut();
+          router.push("/login");
+          return;
+        }
+
         router.push(route);
       }}
       {...rest}
@@ -97,7 +105,7 @@ const SidebarContent = (props: {
         <NavItem icon={FiSearch} route="/search">
           Search
         </NavItem>
-        <NavItem icon={FiLogOut} route="/login">
+        <NavItem icon={FiLogOut} route="signout">
           Signout
         </NavItem>
       </Flex>
