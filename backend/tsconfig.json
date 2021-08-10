@@ -74,5 +74,5 @@
   "ts-node": {
     "files": true
   },
-  "files": ["./server.ts", "../types/*.d.ts"]
+  "files": ["./server.ts", "../types/api.d.ts"]
 }
