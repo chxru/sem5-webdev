@@ -62,12 +62,12 @@ const SaveRefreshToken = async (id: number, token: string) => {
 /**
  * Generate Json web token
  *
- * @param {string} username
+ * @param {number} id User ID
  * @param {("refresh" | "access")} type
  * @return {*}  {Promise<string>}
  */
 const GenerateJWT = (
-  username: string,
+  id: number,
   type: "refresh" | "access"
 ): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -82,7 +82,7 @@ const GenerateJWT = (
     }
 
     jwt.sign(
-      { username },
+      { id },
       token,
       { expiresIn: token === "refresh" ? "7d" : 60 * 15 }, // refresh token 7days, access token 15mins
       (err, token) => {
@@ -129,8 +129,8 @@ const HandleRegister = async (data: RegisterData) => {
     });
 
     // Generate JWT
-    const access_token = await GenerateJWT(data.email, "access");
-    const refresh_token = await GenerateJWT(data.email, "refresh");
+    const access_token = await GenerateJWT(id, "access");
+    const refresh_token = await GenerateJWT(id, "refresh");
 
     // save token in db
     await SaveRefreshToken(id, refresh_token);
@@ -151,26 +151,42 @@ const HandleRegister = async (data: RegisterData) => {
 const HandleLogin = async (
   username: string,
   password: string
-): Promise<{ access_token?: string; refresh_token?: string; err?: string }> => {
+): Promise<{
+  user?: API.UserData;
+  access_token?: string;
+  refresh_token?: string;
+  err?: string;
+}> => {
   try {
-    const user = await pg("users.auth").where({ username }).select("pwd", "id");
+    // get user auth data
+    const userAuthData = await pg("users.auth")
+      .where({ username })
+      .select("pwd", "id");
 
-    if (user.length === 0) {
+    if (userAuthData.length === 0) {
       throw new Error("Username not correct");
     }
 
-    const res = await ComparePwd(password, user[0].pwd);
+    const res = await ComparePwd(password, userAuthData[0].pwd);
 
     if (!res) {
       return { err: "Wrong username/password" };
     }
 
-    const access_token = await GenerateJWT(username, "access");
-    const refresh_token = await GenerateJWT(username, "refresh");
+    // get user data
+    const user = await pg("users.data")
+      .where({ id: userAuthData[0].id })
+      .select("id", "fname", "lname", "email");
 
-    await SaveRefreshToken(user[0].id, refresh_token);
+    // grab user data from the query result
+    const { id, fname, lname, email } = user[0];
 
-    return { access_token, refresh_token };
+    const access_token = await GenerateJWT(id, "access");
+    const refresh_token = await GenerateJWT(id, "refresh");
+
+    await SaveRefreshToken(id, refresh_token);
+
+    return { user: { id, fname, lname, email }, access_token, refresh_token };
   } catch (error) {
     return { err: error };
   }

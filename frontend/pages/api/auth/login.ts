@@ -4,6 +4,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 
 type ResponseType = {
   success: boolean;
+  user?: API.UserData;
   err?: string;
   desc?: string;
   access?: string;
@@ -32,7 +33,7 @@ export default async function handler(
       return;
     }
 
-    const { success, access, refresh, err }: API.LoginResponse =
+    const { success, user, access, refresh, err }: API.LoginResponse =
       await sr.json();
 
     if (!success) {
@@ -52,7 +53,7 @@ export default async function handler(
     });
 
     res.setHeader("Set-Cookie", header);
-    res.status(200).json({ success, access });
+    res.status(200).json({ success, user, access });
   } catch (error) {
     res.status(500).json({
       success: false,

@@ -24,7 +24,7 @@ router.post(
     }
 
     try {
-      const { access_token, refresh_token, err } = await HandleLogin(
+      const { user, access_token, refresh_token, err } = await HandleLogin(
         req.body.username,
         req.body.password
       );
@@ -35,6 +35,7 @@ router.post(
       } else {
         res.status(200).json({
           success: true,
+          user,
           access: access_token,
           refresh: refresh_token,
         });
