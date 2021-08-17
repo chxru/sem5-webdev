@@ -15,7 +15,11 @@ const IndexPage: React.FC = () => {
 
       <Container overflowY="auto" maxW="4xl">
         <Heading mt={{ base: "0", md: "35px" }} size="md" fontWeight="semibold">
-          Welcome {authContext.user?.fname}
+          Welcome{" "}
+          {authContext.user?.fname
+            .split("")
+            .map((l, i) => (i === 0 ? l.toLocaleUpperCase() : l))
+            .join("")}
         </Heading>
 
         <Flex
