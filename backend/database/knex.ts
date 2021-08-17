@@ -10,7 +10,7 @@ const pg = knex({
     password: process.env.PGPASSWORD,
     database: process.env.PGDATABASE,
   },
-  debug: true,
+  debug: false,
 });
 
 export { pg };
