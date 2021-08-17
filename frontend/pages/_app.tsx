@@ -59,6 +59,12 @@ function MyApp({ Component, pageProps }: AppProps) {
 
   const onMount = async () => {
     await RefreshAccessToken();
+
+    // refresh access token for every 15mins
+    setInterval(async () => {
+      console.info("Refreshing access token");
+      await RefreshAccessToken();
+    }, 1000 * 60 * 15);
   };
 
   // onMount
