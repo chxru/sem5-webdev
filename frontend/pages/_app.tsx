@@ -1,6 +1,6 @@
 import "../styles/globals.css";
 import type { AppProps } from "next/app";
-import { useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { ChakraProvider } from "@chakra-ui/react";
 
 import Sidebar from "../components/sidebar";
@@ -9,16 +9,19 @@ import Overlay from "../components/overlay";
 import LoginPage from "./login";
 
 import AuthContext from "../contexts/auth-context";
+import NotifyContext from "../contexts/notify-context";
 
 function MyApp({ Component, pageProps }: AppProps) {
-  const [refreshToken, setrefreshToken] = useState<string>();
+  const notify = useContext(NotifyContext);
+
+  const [accessToken, setaccessToken] = useState<string>();
   const [userData, setuserData] = useState<API.UserData>();
   const onSignIn = (token: string, user: API.UserData) => {
-    setrefreshToken(token);
+    setaccessToken(token);
     setuserData(user);
   };
   const onSignOut = () => {
-    setrefreshToken(undefined);
+    setaccessToken(undefined);
     setuserData({
       id: -1,
       fname: "",
@@ -27,13 +30,50 @@ function MyApp({ Component, pageProps }: AppProps) {
     });
   };
 
+  const RefreshAccessToken = async () => {
+    try {
+      const res = await fetch("/api/auth/refresh", { method: "POST" });
+      if (res.ok) {
+        const data = await res.json();
+
+        if (!!data.access_token) {
+          setaccessToken(data.access_token);
+        }
+        if (!!data.user) {
+          setuserData(data.user);
+        }
+        return;
+      }
+
+      if (res.status !== 401) {
+        notify.NewAlert({
+          msg: "Credentials expired",
+          description: "Please login again",
+          status: "info",
+        });
+      }
+    } catch (error) {
+      // in exceptions, pass silently
+    }
+  };
+
+  const onMount = async () => {
+    await RefreshAccessToken();
+  };
+
+  // onMount
+  useEffect(() => {
+    onMount();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <ChakraProvider>
       <AuthContext.Provider
-        value={{ token: refreshToken, user: userData, onSignIn, onSignOut }}
+        value={{ token: accessToken, user: userData, onSignIn, onSignOut }}
       >
         <Overlay>
-          {!!refreshToken ? (
+          {!!accessToken ? (
             <Sidebar>
               <Component {...pageProps} />
             </Sidebar>
