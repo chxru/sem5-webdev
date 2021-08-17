@@ -2,6 +2,13 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "Dev all",
+            "dependsOn": ["Frontend dev", "Backend dev local"],
+            "dependsOrder": "parallel",
+            "group": "none",
+            "isBackground": true
+        },
+        {
             "type": "npm",
             "script": "dev",
             "path": "frontend/",
