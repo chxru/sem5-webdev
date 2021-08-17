@@ -1,17 +1,24 @@
 import express, { Router } from "express";
 import { checkSchema, validationResult } from "express-validator";
 
-import { HandleLogin, HandleRegister } from "../controllers/auth";
+import {
+  HandleLogin,
+  HandleRefreshToken,
+  HandleRegister,
+} from "../controllers/auth";
 import { signin_schema, signup_schema } from "./schemas/auth";
 
 import { logger } from "../util/logger";
 
 const router = Router();
 
+// /auth/login endpoint
 router.post(
   "/login",
   checkSchema(signin_schema),
   async (req: express.Request, res: express.Response<API.LoginResponse>) => {
+    logger("/auth/login");
+
     // schema validation
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -20,6 +27,7 @@ router.post(
         .array()
         .map((i) => `${i.param}: ${i.msg}`)
         .join("\n");
+      logger("Login schema validation failed", "info");
       return res.status(400).json({ success: false, err });
     }
 
@@ -46,6 +54,7 @@ router.post(
   }
 );
 
+// /auth/register endpoint
 router.post(
   "/create",
   checkSchema(signup_schema),
@@ -80,5 +89,32 @@ router.post(
     }
   }
 );
+
+// /auth/refresh endpoint
+router.post("/refresh", async (req, res) => {
+  logger("/auth/refresh");
+
+  // 403 if token not found
+  const token = req.body.refresh_token;
+  if (!token) {
+    logger("Token not found in req body", "info");
+    res.sendStatus(403);
+    return;
+  }
+
+  try {
+    const { ok, access, user } = await HandleRefreshToken(token);
+    if (!ok || !access) {
+      logger(`Token status is ${ok}`, "info");
+      res.sendStatus(403);
+      return;
+    }
+
+    logger("Token refreshed", "success");
+    res.status(200).json({ access_token: access, user });
+  } catch (error) {
+    res.sendStatus(403);
+  }
+});
 
 export default router;

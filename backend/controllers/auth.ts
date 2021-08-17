@@ -1,6 +1,9 @@
-import * as bcrypt from "bcrypt";
-import * as jwt from "jsonwebtoken";
 import { pg } from "../database/knex";
+import { ComparePwd, HashPwd } from "../util/bcrypt";
+import { DecodeJWT, GenerateJWT } from "../util/jwt";
+import { FetchRefreshToken, SaveRefreshToken } from "../database/tokens";
+import { SaveNewUserDB } from "../database/users";
+import { logger } from "../util/logger";
 
 interface RegisterData {
   email: string;
@@ -10,123 +13,14 @@ interface RegisterData {
 }
 
 /**
- * Generate hash of the user's password
- *
- * @param {string} pwd
- * @return {*}
- */
-const HashPwd = (pwd: string) => {
-  const saltRounds = 10;
-  return new Promise((resolve, reject) => {
-    bcrypt.hash(pwd, saltRounds, (err, hash) => {
-      if (err) {
-        reject(err);
-      }
-      resolve(hash);
-    });
-  });
-};
-
-/**
- * Compare given password with the hash
- *
- * @param {string} pwd
- * @param {string} hash
- * @return {*}  {Promise<boolean>}
- */
-const ComparePwd = (pwd: string, hash: string): Promise<boolean> => {
-  return new Promise((resolve, reject) => {
-    bcrypt.compare(pwd, hash, (err, res) => {
-      if (err) {
-        reject(err);
-      }
-      resolve(res);
-    });
-  });
-};
-
-/**
- * Save refresh token in database users.token
- *
- * @param {number} id
- * @param {string} token
- */
-const SaveRefreshToken = async (id: number, token: string) => {
-  // create a date for now+7days
-  const expires = new Date();
-  expires.setDate(expires.getDate() + 7);
-
-  await pg("users.tokens").insert({ id, token, expires });
-};
-
-/**
- * Generate Json web token
- *
- * @param {number} id User ID
- * @param {("refresh" | "access")} type
- * @return {*}  {Promise<string>}
- */
-const GenerateJWT = (
-  id: number,
-  type: "refresh" | "access"
-): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    let token =
-      type === "refresh"
-        ? process.env.JWT_REFRESH_TOKEN
-        : process.env.JWT_ACCESS_TOKEN;
-
-    // FIXME: Bad practice
-    if (!token) {
-      token = "justtobypasstypeerror :)";
-    }
-
-    jwt.sign(
-      { id },
-      token,
-      { expiresIn: token === "refresh" ? "7d" : 60 * 15 }, // refresh token 7days, access token 15mins
-      (err, token) => {
-        if (!!token) {
-          resolve(token);
-        }
-
-        // reject if no token is generated
-        reject(err);
-      }
-    );
-  });
-};
-
-/**
  * Handle new user registration process
  *
  * @param {RegisterData} data new users details
  */
 const HandleRegister = async (data: RegisterData) => {
   try {
-    const id: number = await pg.transaction(async (trx) => {
-      // insert user data to database
-      const uid = await trx("users.data").insert(
-        {
-          email: data.email,
-          fname: data.fname,
-          lname: data.lname,
-        },
-        "id"
-      );
-
-      // hashing password
-      const hash = await HashPwd(data.password);
-
-      // updating user auth tablel
-      await trx("users.auth").insert({
-        id: uid[0],
-        username: data.email,
-        pwd: hash,
-      });
-
-      return uid[0];
-    });
+    const hashedPwd = await HashPwd(data.password);
+    const id: number = await SaveNewUserDB({ ...data, password: hashedPwd });
 
     // Generate JWT
     const access_token = await GenerateJWT(id, "access");
@@ -159,6 +53,7 @@ const HandleLogin = async (
 }> => {
   try {
     // get user auth data
+    // TODO: Separte db logics from controller
     const userAuthData = await pg("users.auth")
       .where({ username })
       .select("pwd", "id");
@@ -174,6 +69,7 @@ const HandleLogin = async (
     }
 
     // get user data
+    // TODO: Separte db logics from controller
     const user = await pg("users.data")
       .where({ id: userAuthData[0].id })
       .select("id", "fname", "lname", "email");
@@ -192,4 +88,45 @@ const HandleLogin = async (
   }
 };
 
-export { HandleLogin, HandleRegister };
+const HandleRefreshToken = async (
+  token: string
+): Promise<{ ok: boolean; access?: string; user?: API.UserData }> => {
+  try {
+    // decode jwt
+    const { ok, err, payload } = await DecodeJWT(token);
+
+    if (!ok || !payload) {
+      logger(err || "JWT Decode unknown error", "info");
+      return { ok: false };
+    }
+
+    const uid = JSON.parse(payload).id;
+    if (!uid) {
+      logger("JWT Payload doesnt have uid value", "error");
+      return { ok: false };
+    }
+
+    // check database for saved uid+token combinations
+    await FetchRefreshToken(parseInt(uid), token);
+
+    // generate new access token
+    const access = await GenerateJWT(uid, "access");
+
+    // get user data
+    // TODO: Separte db logics from controller
+    const user = await pg("users.data")
+      .where({ id: uid })
+      .select("id", "fname", "lname", "email");
+
+    // grab user data from the query result
+    const { id, fname, lname, email } = user[0];
+
+    return { ok, access, user: { id, fname, lname, email } };
+  } catch (error) {
+    logger("Error occured while Handle Refresh Token", "error");
+    console.log(error);
+    return { ok: false };
+  }
+};
+
+export { HandleLogin, HandleRegister, HandleRefreshToken };
