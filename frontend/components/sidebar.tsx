@@ -10,6 +10,7 @@ import {
   Icon,
   IconButton,
   useDisclosure,
+  Text,
 } from "@chakra-ui/react";
 import { FiMenu, FiHome, FiUserPlus, FiSearch, FiLogOut } from "react-icons/fi";
 import { IconType } from "react-icons/lib";
@@ -84,9 +85,9 @@ const SidebarContent = (props: {
       {...props}
     >
       <Flex mt="50px" align="center">
-        <Heading size="lg" fontWeight="semibold">
+        <Text textStyle="h1" fontSize="2xl" fontWeight="semibold">
           PMS
-        </Heading>
+        </Text>
       </Flex>
       <Flex
         direction="column"
