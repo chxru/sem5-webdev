@@ -5,6 +5,7 @@ import {
   Container,
   Flex,
   FormControl,
+  FormHelperText,
   FormLabel,
   Grid,
   GridItem,
@@ -19,9 +20,21 @@ import {
   Radio,
   RadioGroup,
 } from "@chakra-ui/react";
+import { Controller, useForm } from "react-hook-form";
 
 const NewPatientPage: React.FC = () => {
   const today = new Date();
+  const {
+    control,
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<API.PatientRegistrationFormData>();
+
+  const Submit = (data: API.PatientRegistrationFormData) => {
+    console.log(data);
+  };
+
   return (
     <>
       <Head>
@@ -56,54 +69,89 @@ const NewPatientPage: React.FC = () => {
             <GridItem>
               <FormControl id="fname" isRequired>
                 <FormLabel>First Name</FormLabel>
-                <Input type="text" />
+                <Input
+                  type="text"
+                  {...(register("fname"), { required: true })}
+                />
+                <FormHelperText>{errors.fname?.message}</FormHelperText>
               </FormControl>
             </GridItem>
             <GridItem>
-              <FormControl id="lname" isRequired>
+              <FormControl id="lname">
                 <FormLabel>Last Name</FormLabel>
-                <Input type="text" />
+                <Input type="text" {...register("lname")} />
+                <FormHelperText>{errors.lname?.message}</FormHelperText>
               </FormControl>
             </GridItem>
 
             <GridItem>
               <FormControl id="gender" isRequired>
                 <FormLabel>Gender</FormLabel>
-                <RadioGroup colorScheme="teal" mt={3}>
-                  <HStack>
-                    <Radio value="male">Male</Radio>
-                    <Radio value="female">Female</Radio>
-                  </HStack>
-                </RadioGroup>
+                <Controller
+                  name="gender"
+                  control={control}
+                  rules={{ required: true }}
+                  render={({ field }) => (
+                    <RadioGroup colorScheme="teal" mt={3} {...field}>
+                      <HStack>
+                        <Radio value="male">Male</Radio>
+                        <Radio value="female">Female</Radio>
+                      </HStack>
+                    </RadioGroup>
+                  )}
+                />
+                <FormHelperText>{errors.gender?.message}</FormHelperText>
               </FormControl>
             </GridItem>
             <GridItem>
               <FormControl id="dob">
                 <FormLabel>Date of Birthday</FormLabel>
                 <HStack>
-                  <NumberInput min={1} max={31}>
-                    <NumberInputField placeholder="DD" />
-                    <NumberInputStepper>
-                      <NumberIncrementStepper />
-                      <NumberDecrementStepper />
-                    </NumberInputStepper>
-                  </NumberInput>
+                  <Controller
+                    name="dob.d"
+                    control={control}
+                    render={({ field }) => (
+                      <NumberInput min={1} max={31} {...field}>
+                        <NumberInputField placeholder="DD" />
+                        <NumberInputStepper>
+                          <NumberIncrementStepper />
+                          <NumberDecrementStepper />
+                        </NumberInputStepper>
+                      </NumberInput>
+                    )}
+                  />
 
-                  <NumberInput min={1} max={12}>
-                    <NumberInputField placeholder="MM" />
-                    <NumberInputStepper>
-                      <NumberIncrementStepper />
-                      <NumberDecrementStepper />
-                    </NumberInputStepper>
-                  </NumberInput>
+                  <Controller
+                    name="dob.m"
+                    control={control}
+                    render={({ field }) => (
+                      <NumberInput min={1} max={12} {...field}>
+                        <NumberInputField placeholder="MM" />
+                        <NumberInputStepper>
+                          <NumberIncrementStepper />
+                          <NumberDecrementStepper />
+                        </NumberInputStepper>
+                      </NumberInput>
+                    )}
+                  />
 
-                  <NumberInput min={1} max={today.getFullYear()}>
-                    <NumberInputField placeholder="YYYY" />
-                    <NumberInputStepper>
-                      <NumberIncrementStepper />
-                      <NumberDecrementStepper />
-                    </NumberInputStepper>
-                  </NumberInput>
+                  <Controller
+                    name="dob.y"
+                    control={control}
+                    render={({ field }) => (
+                      <NumberInput
+                        min={1990}
+                        max={today.getFullYear()}
+                        {...field}
+                      >
+                        <NumberInputField placeholder="YYYY" />
+                        <NumberInputStepper>
+                          <NumberIncrementStepper />
+                          <NumberDecrementStepper />
+                        </NumberInputStepper>
+                      </NumberInput>
+                    )}
+                  />
                 </HStack>
               </FormControl>
             </GridItem>
@@ -111,20 +159,26 @@ const NewPatientPage: React.FC = () => {
             <GridItem colSpan={{ base: 1, sm: 2 }}>
               <FormControl id="address" isRequired>
                 <FormLabel>Address</FormLabel>
-                <Input type="text" />
+                <Input
+                  type="text"
+                  {...(register("address"), { required: true })}
+                />
+                <FormHelperText>{errors.address?.message}</FormHelperText>
               </FormControl>
             </GridItem>
 
             <GridItem>
               <FormControl id="email">
                 <FormLabel>Email</FormLabel>
-                <Input type="email" />
+                <Input type="email" {...register("email")} />
+                <FormHelperText>{errors.email?.message}</FormHelperText>
               </FormControl>
             </GridItem>
             <GridItem>
               <FormControl id="tp" isRequired>
                 <FormLabel>Phone Number</FormLabel>
-                <Input type="text" />
+                <Input type="text" {...(register("tp"), { required: true })} />
+                <FormHelperText>{errors.tp?.message}</FormHelperText>
               </FormControl>
             </GridItem>
           </Grid>
@@ -153,37 +207,59 @@ const NewPatientPage: React.FC = () => {
               <FormControl id="adm_date" isRequired>
                 <FormLabel>Admission date</FormLabel>
                 <HStack>
-                  <NumberInput defaultValue={today.getDate()} min={1} max={31}>
-                    <NumberInputField placeholder="DD" />
-                    <NumberInputStepper>
-                      <NumberIncrementStepper />
-                      <NumberDecrementStepper />
-                    </NumberInputStepper>
-                  </NumberInput>
+                  <Controller
+                    name="dob.d"
+                    control={control}
+                    render={({ field }) => (
+                      <NumberInput
+                        defaultValue={today.getDate()}
+                        min={1}
+                        max={31}
+                      >
+                        <NumberInputField placeholder="DD" {...field} />
+                        <NumberInputStepper>
+                          <NumberIncrementStepper />
+                          <NumberDecrementStepper />
+                        </NumberInputStepper>
+                      </NumberInput>
+                    )}
+                  />
 
-                  <NumberInput
-                    defaultValue={today.getMonth() + 1}
-                    min={1}
-                    max={12}
-                  >
-                    <NumberInputField placeholder="MM" />
-                    <NumberInputStepper>
-                      <NumberIncrementStepper />
-                      <NumberDecrementStepper />
-                    </NumberInputStepper>
-                  </NumberInput>
+                  <Controller
+                    name="dob.d"
+                    control={control}
+                    render={({ field }) => (
+                      <NumberInput
+                        defaultValue={today.getMonth() + 1}
+                        min={1}
+                        max={12}
+                      >
+                        <NumberInputField placeholder="MM" {...field} />
+                        <NumberInputStepper>
+                          <NumberIncrementStepper />
+                          <NumberDecrementStepper />
+                        </NumberInputStepper>
+                      </NumberInput>
+                    )}
+                  />
 
-                  <NumberInput
-                    defaultValue={today.getFullYear()}
-                    min={2020}
-                    max={today.getFullYear()}
-                  >
-                    <NumberInputField placeholder="YYYY" />
-                    <NumberInputStepper>
-                      <NumberIncrementStepper />
-                      <NumberDecrementStepper />
-                    </NumberInputStepper>
-                  </NumberInput>
+                  <Controller
+                    name="dob.d"
+                    control={control}
+                    render={({ field }) => (
+                      <NumberInput
+                        defaultValue={today.getFullYear()}
+                        min={2020}
+                        max={today.getFullYear()}
+                      >
+                        <NumberInputField placeholder="YYYY" {...field} />
+                        <NumberInputStepper>
+                          <NumberIncrementStepper />
+                          <NumberDecrementStepper />
+                        </NumberInputStepper>
+                      </NumberInput>
+                    )}
+                  />
                 </HStack>
               </FormControl>
             </GridItem>
@@ -191,14 +267,22 @@ const NewPatientPage: React.FC = () => {
             <GridItem>
               <FormControl id="adm_dic" isRequired>
                 <FormLabel>Doctor in charge</FormLabel>
-                <Input type="text" />
+                <Input
+                  type="text"
+                  {...(register("admission.dic"), { required: true })}
+                />
               </FormControl>
             </GridItem>
           </Grid>
         </Container>
 
         <Flex justify="center" mt="35px">
-          <Button size="md" colorScheme="teal" mx="5px">
+          <Button
+            size="md"
+            colorScheme="teal"
+            mx="5px"
+            onClick={handleSubmit(Submit)}
+          >
             Register
           </Button>
           <Button size="md" mx="5px">
