@@ -26,4 +26,30 @@ declare namespace API {
         refresh?: string;
         err?: string;
     }
+
+    /**
+     * Contain the types used in patient registration form
+     *
+     * @export
+     * @interface PatientRegistrationFormData
+     */
+    export interface PatientRegistrationFormData {
+        fname: string;
+        lname: string;
+        gender: string;
+        dob: {
+            d: number;
+            m: number;
+            y: number;
+        };
+        address: string;
+        email: string;
+        tp: string;
+        admission: {
+            d: number;
+            m: number;
+            y: number;
+            dic: string;
+        };
+    }
 }
