@@ -4,6 +4,7 @@ import { logger } from "./util/logger";
 
 // routes
 import authroutes from "./routes/auth";
+import patientroutes from "./routes/patient";
 
 const app = express();
 app.use(express.json());
@@ -12,8 +13,10 @@ app.use(cors({ origin: "http://localhost:3000" }));
 // app.use(verifyToken);
 
 app.use("/auth", authroutes);
+app.use("/patient", patientroutes);
 
-app.get("/", (req, res) => {
+app.all("*", (req, res) => {
+  logger("Request received", "info");
   res.send(process.env.DB_PORT);
 });
 
