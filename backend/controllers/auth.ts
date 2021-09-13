@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { pg } from "../database/knex";
 import { ComparePwd, HashPwd } from "../util/bcrypt";
 import { DecodeJWT, GenerateJWT } from "../util/jwt";

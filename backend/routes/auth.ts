@@ -1,3 +1,4 @@
+// @ts-nocheck
 import express, { Router } from "express";
 import { checkSchema, validationResult } from "express-validator";
 
