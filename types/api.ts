@@ -1,22 +1,24 @@
+import type { DB } from "./db";
+
 export namespace API {
   /**
-   * Data passing with the jwt
-   *
-   * @export
-   * @interface UserData
+   * Information required when creating a user
    */
-  export interface UserData {
-    id: number;
-    fname: string;
-    lname: string;
-    email: string;
-  }
+  export type RegisterData = Pick<
+    DB.User.Data,
+    "fname" | "lname" | "email" | "created_by"
+  >;
+
+  /**
+   * Data passing with the jwt
+   */
+  export type UserData = Pick<DB.User.Data, "id" | "fname" | "lname" | "email">;
+
   /**
    * Return type when the backend successfully executed the
    * username & password checking (no matter password is
    * correct or incorrect)
    *
-   * @export
    * @interface LoginResponse
    */
   export interface LoginResponse {
@@ -29,27 +31,9 @@ export namespace API {
 
   /**
    * Contain the types used in patient registration form
-   *
-   * @export
-   * @interface PatientRegistrationFormData
    */
-  export interface PatientRegistrationFormData {
-    fname: string;
-    lname: string;
-    gender: string;
-    dob: {
-      d: number;
-      m: number;
-      y: number;
-    };
-    address: string;
-    email: string;
-    tp: string;
-    admission: {
-      d: number;
-      m: number;
-      y: number;
-      dic: string;
-    };
-  }
+  export type PatientRegistrationFormData = Omit<
+    DB.Patient.Data,
+    "id" | "created_at"
+  >;
 }

@@ -9,19 +9,12 @@ import { logger } from "util/logger";
 
 import type { API } from "@sem5-webdev/types";
 
-interface RegisterData {
-  email: string;
-  fname: string;
-  lname: string;
-  password: string;
-}
-
 /**
  * Handle new user registration process
  *
- * @param {RegisterData} data new users details
+ * @param {API.RegisterData} data new users details
  */
-const HandleRegister = async (data: RegisterData) => {
+const HandleRegister = async (data: API.RegisterData) => {
   try {
     const hashedPwd = await HashPwd(data.password);
     const id: number = await SaveNewUserDB({ ...data, password: hashedPwd });

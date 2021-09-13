@@ -1,10 +1,5 @@
 import { pg } from "database/knex";
 
-interface PatientEncryptedDataInterface {
-  id: number;
-  data: string;
-}
-
 const SaveNewPatientDB = async (data: string): Promise<number> => {
   const q = await pg("patients.info").insert({ data }).returning("id");
 
