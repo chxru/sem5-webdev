@@ -4,6 +4,8 @@ import fetch from "node-fetch";
 import { serialize } from "cookie";
 import type { NextApiRequest, NextApiResponse } from "next";
 
+import type { API } from "@sem5-webdev/types";
+
 type ResponseType = {
   success: boolean;
   user?: API.UserData;

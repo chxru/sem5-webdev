@@ -22,6 +22,8 @@ import {
 } from "@chakra-ui/react";
 import { Controller, useForm } from "react-hook-form";
 
+import type { API } from "@sem5-webdev/types";
+
 const NewPatientPage: React.FC = () => {
   const today = new Date();
   const {

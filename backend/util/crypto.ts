@@ -1,5 +1,7 @@
 import { createCipheriv, createDecipheriv, createHash } from "crypto";
 
+import type { API } from "@sem5-webdev/types";
+
 /*
   For reference 
   https://nodejs.org/api/crypto.html#crypto_crypto_createdecipheriv_algorithm_key_iv_options

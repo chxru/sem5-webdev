@@ -15,8 +15,10 @@ import {
 import { useForm } from "react-hook-form";
 import Head from "next/head";
 
-import NotifyContext from "../contexts/notify-context";
-import AuthContext from "../contexts/auth-context";
+import NotifyContext from "contexts/notify-context";
+import AuthContext from "contexts/auth-context";
+
+import type { API } from "@sem5-webdev/types";
 
 interface LoginForm {
   username: string;
@@ -74,7 +76,8 @@ const LoginPage: React.FC = () => {
     } catch (error) {
       notify.NewAlert({
         msg: "Something is wrong",
-        description: error,
+        // FIXME
+        // description: error,
         status: "error",
       });
     }

@@ -1,8 +1,10 @@
 import { Router, Request, Response } from "express";
 import { checkSchema, validationResult } from "express-validator";
-import { HandleNewPatient } from "../controllers/patient";
-import { logger } from "../util/logger";
-import { new_patient_schema } from "./schemas/patient";
+import { HandleNewPatient } from "controllers/patient";
+import { logger } from "util/logger";
+import { new_patient_schema } from "routes/schemas/patient";
+
+import type { API } from "@sem5-webdev/types";
 
 const router = Router();
 

@@ -1,4 +1,4 @@
-import { pg } from "./knex";
+import { pg } from "database/knex";
 
 /**
  * Save refresh token in database users.token

@@ -1,4 +1,4 @@
-import { pg } from "./knex";
+import { pg } from "database/knex";
 
 interface PatientEncryptedDataInterface {
   id: number;

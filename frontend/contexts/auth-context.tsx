@@ -1,4 +1,5 @@
 import React from "react";
+import type { API } from "@sem5-webdev/types";
 
 const AuthContext = React.createContext<{
   user?: API.UserData;

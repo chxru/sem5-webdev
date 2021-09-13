@@ -14,7 +14,7 @@ import {
 } from "@chakra-ui/react";
 import { FiMenu, FiHome, FiUserPlus, FiSearch, FiLogOut } from "react-icons/fi";
 import { IconType } from "react-icons/lib";
-import AuthContext from "../contexts/auth-context";
+import AuthContext from "contexts/auth-context";
 
 interface sidebarProps {
   children: React.ReactNode;

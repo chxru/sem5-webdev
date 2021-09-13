@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import Head from "next/head";
 import { Box, Container, Flex, Heading, Text } from "@chakra-ui/react";
-import AuthContext from "../contexts/auth-context";
+import AuthContext from "contexts/auth-context";
 
 const IndexPage: React.FC = () => {
   const authContext = useContext(AuthContext);

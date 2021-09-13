@@ -1,11 +1,11 @@
 // @ts-nocheck
 import express from "express";
 import cors from "cors";
-import { logger } from "./util/logger";
+import { logger } from "util/logger";
 
 // routes
-import authroutes from "./routes/auth";
-import patientroutes from "./routes/patient";
+import authroutes from "routes/auth";
+import patientroutes from "routes/patient";
 
 const app = express();
 app.use(express.json());

@@ -6,10 +6,12 @@ import {
   HandleLogin,
   HandleRefreshToken,
   HandleRegister,
-} from "../controllers/auth";
-import { signin_schema, signup_schema } from "./schemas/auth";
+} from "controllers/auth";
+import { signin_schema, signup_schema } from "routes/schemas/auth";
 
-import { logger } from "../util/logger";
+import { logger } from "util/logger";
+
+import type { API } from "@sem5-webdev/types";
 
 const router = Router();
 

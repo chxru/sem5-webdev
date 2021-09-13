@@ -1,6 +1,6 @@
 import React from "react";
 import { useToast } from "@chakra-ui/react";
-import NotifyContext from "../contexts/notify-context";
+import NotifyContext from "contexts/notify-context";
 
 const Overlay: React.FC = ({ children }) => {
   const toast = useToast();

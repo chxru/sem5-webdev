@@ -1,10 +1,13 @@
 // @ts-nocheck
-import { pg } from "../database/knex";
-import { ComparePwd, HashPwd } from "../util/bcrypt";
-import { DecodeJWT, GenerateJWT } from "../util/jwt";
-import { FetchRefreshToken, SaveRefreshToken } from "../database/tokens";
-import { SaveNewUserDB } from "../database/users";
-import { logger } from "../util/logger";
+import { pg } from "database/knex";
+import { FetchRefreshToken, SaveRefreshToken } from "database/tokens";
+import { SaveNewUserDB } from "database/users";
+
+import { ComparePwd, HashPwd } from "util/bcrypt";
+import { DecodeJWT, GenerateJWT } from "util/jwt";
+import { logger } from "util/logger";
+
+import type { API } from "@sem5-webdev/types";
 
 interface RegisterData {
   email: string;

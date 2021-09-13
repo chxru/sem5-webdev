@@ -7,8 +7,8 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "dev": "yarn dbinit && nodemon -r dotenv/config server.ts dotenv_config_path=../.env",
-    "build": "tsc --project ./",
+    "dev": "cross-env NODE_PATH=./ nodemon -r dotenv/config server.ts dotenv_config_path=../.env",
+    "build": "cross-env NODE_PATH=./ tsc --project ./",
     "dbinit": "node database/boot/boot.js"
   },
   "devDependencies": {
@@ -29,6 +29,7 @@
     "bcrypt": "^5.0.1",
     "chalk": "^4.1.1",
     "cors": "^2.8.5",
+    "cross-env": "^7.0.3",
     "express": "^4.17.1",
     "express-validator": "^6.12.0",
     "jsonwebtoken": "^8.5.1",
