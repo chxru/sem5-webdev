@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import fetch from "node-fetch";
 import { serialize } from "cookie";
 import type { NextApiRequest, NextApiResponse } from "next";

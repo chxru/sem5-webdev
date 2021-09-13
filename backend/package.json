@@ -1,14 +1,13 @@
 {
-  "name": "ee5209-backend",
+  "name": "@sem5-webdev/backend",
   "version": "1.0.0",
   "description": "Backend for ee5209 module web project",
   "main": "index.js",
   "author": "CharukaHS",
   "license": "MIT",
-  "private": false,
+  "private": true,
   "scripts": {
-    "dev": "yarn dbinit && nodemon --legacy-watch server.ts",
-    "dev:local": "yarn dbinit && nodemon -r dotenv/config server.ts dotenv_config_path=../.env",
+    "dev": "yarn dbinit && nodemon -r dotenv/config server.ts dotenv_config_path=../.env",
     "build": "tsc --project ./",
     "dbinit": "node database/boot/boot.js"
   },
@@ -26,6 +25,7 @@
     "typescript": "^4.3.4"
   },
   "dependencies": {
+    "@sem5-webdev/types": "1.0.0",
     "bcrypt": "^5.0.1",
     "chalk": "^4.1.1",
     "cors": "^2.8.5",
