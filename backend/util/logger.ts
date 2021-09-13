@@ -22,7 +22,7 @@ export const logger = async (
       break;
 
     case "debug":
-      if (!process.env.PRODUCTION)
+      if (process.env.PRODUCTION !== "true")
         console.log(t, chalk.black.bgWhite("DEBUG:"), log);
       break;
   }
