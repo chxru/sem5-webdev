@@ -1,7 +1,5 @@
 import { createCipheriv, createDecipheriv, createHash } from "crypto";
 
-import type { API } from "@sem5-webdev/types";
-
 /*
   For reference 
   https://nodejs.org/api/crypto.html#crypto_crypto_createdecipheriv_algorithm_key_iv_options
@@ -19,20 +17,16 @@ const KEYPHASE = "3a6f0aa4866e7ee0d90f811eb68d00b7"; // TODO: Move it more secur
 /**
  * Encrypt JSON object
  *
- * @param {API.PatientRegistrationFormData} data
+ * @param {string} data
  * @return {*}  {string}
  */
-const EncryptData = (data: API.PatientRegistrationFormData): string => {
+const EncryptData = (data: string): string => {
   const iv = Buffer.alloc(16, 0); // initialization vector
   const key = createHash("sha256").update(KEYPHASE).digest();
   const cipher = createCipheriv(ALGO, key, iv);
 
   // create a string of cipher text including the iv
-  const encrypted = Buffer.concat([
-    iv,
-    cipher.update(JSON.stringify(data)),
-    cipher.final(),
-  ]);
+  const encrypted = Buffer.concat([iv, cipher.update(data), cipher.final()]);
 
   return encrypted.toString("base64");
 };
@@ -41,9 +35,9 @@ const EncryptData = (data: API.PatientRegistrationFormData): string => {
  * Decrypt given string to JSON object
  *
  * @param {string} data
- * @return {*}  {API.PatientRegistrationFormData}
+ * @return {*}  {PMSDB.patients.info_decrypted}
  */
-const DecryptData = (data: string): API.PatientRegistrationFormData => {
+const DecryptData = <T>(data: string): T => {
   // create buffer from data
   const buffer = Buffer.from(data, "base64");
 
@@ -58,8 +52,8 @@ const DecryptData = (data: string): API.PatientRegistrationFormData => {
     decipher.update(encrypted),
     decipher.final(),
   ]);
-  const d: API.PatientRegistrationFormData = JSON.parse(decrypted.toString());
-  return d;
+
+  return JSON.parse(decrypted.toString());
 };
 
 export { EncryptData, DecryptData };

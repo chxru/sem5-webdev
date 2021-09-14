@@ -44,11 +44,13 @@ export namespace API {
     }
   }
 
-  /**
-   * Contain the types used in patient registration form
-   */
-  export type PatientRegistrationFormData = Omit<
-    DB.Patient.Data,
-    "id" | "created_at"
-  >;
+  export namespace Patient {
+    /**
+     * Contain the types used in patient registration form
+     */
+    export interface RegistrationForm
+      extends Omit<DB.Patient.Data, "id" | "created_at"> {
+      [key: string]: any;
+    }
+  }
 }

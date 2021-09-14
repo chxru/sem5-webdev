@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useContext, useState } from "react";
 import Head from "next/head";
+import { useRouter } from "next/router";
 import {
   Button,
   Container,
@@ -22,19 +23,71 @@ import {
 } from "@chakra-ui/react";
 import { Controller, useForm } from "react-hook-form";
 
+import AuthContext from "contexts/auth-context";
+import NotifyContext from "contexts/notify-context";
+
+import { ApiRequest } from "util/request";
+
 import type { API } from "@sem5-webdev/types";
 
 const NewPatientPage: React.FC = () => {
+  const auth = useContext(AuthContext);
+  const notify = useContext(NotifyContext);
+  const router = useRouter();
+
   const today = new Date();
   const {
     control,
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<API.PatientRegistrationFormData>();
+  } = useForm<API.Patient.RegistrationForm>();
 
-  const Submit = (data: API.PatientRegistrationFormData) => {
-    console.log(data);
+  const [submitting, setsubmitting] = useState<boolean>(false);
+
+  const Submit = async (values: API.Patient.RegistrationForm) => {
+    setsubmitting(true);
+
+    // remove empty fields from the values object
+    for (const key in values) {
+      if (Object.prototype.hasOwnProperty.call(values, key)) {
+        if (!values[key]) {
+          delete values[key];
+        }
+      }
+    }
+
+    const { success, data, err } = await ApiRequest<{ id: number }>({
+      path: "patient/add",
+      method: "POST",
+      obj: values,
+      token: auth.token,
+    });
+
+    if (!success) {
+      notify.NewAlert({
+        msg: "Invalid form data",
+        description: err,
+        status: "error",
+      });
+      return;
+    }
+
+    notify.NewAlert({
+      msg: "New patient record saved",
+      status: "success",
+    });
+
+    if (!data) {
+      notify.NewAlert({
+        msg: "No patient id received",
+        description:
+          "Cannot redirect to patient profile due to lack of patient id in the database response",
+        status: "info",
+      });
+    } else {
+      router.push(`/patient/${data}`);
+    }
   };
 
   return (
@@ -71,10 +124,7 @@ const NewPatientPage: React.FC = () => {
             <GridItem>
               <FormControl id="fname" isRequired>
                 <FormLabel>First Name</FormLabel>
-                <Input
-                  type="text"
-                  {...(register("fname"), { required: true })}
-                />
+                <Input type="text" {...register("fname", { required: true })} />
                 <FormHelperText>{errors.fname?.message}</FormHelperText>
               </FormControl>
             </GridItem>
@@ -163,7 +213,7 @@ const NewPatientPage: React.FC = () => {
                 <FormLabel>Address</FormLabel>
                 <Input
                   type="text"
-                  {...(register("address"), { required: true })}
+                  {...register("address", { required: true })}
                 />
                 <FormHelperText>{errors.address?.message}</FormHelperText>
               </FormControl>
@@ -179,7 +229,7 @@ const NewPatientPage: React.FC = () => {
             <GridItem>
               <FormControl id="tp" isRequired>
                 <FormLabel>Phone Number</FormLabel>
-                <Input type="text" {...(register("tp"), { required: true })} />
+                <Input type="text" {...register("tp", { required: true })} />
                 <FormHelperText>{errors.tp?.message}</FormHelperText>
               </FormControl>
             </GridItem>
@@ -271,7 +321,7 @@ const NewPatientPage: React.FC = () => {
                 <FormLabel>Doctor in charge</FormLabel>
                 <Input
                   type="text"
-                  {...(register("admission.dic"), { required: true })}
+                  {...register("admission.dic", { required: true })}
                 />
               </FormControl>
             </GridItem>
