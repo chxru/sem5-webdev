@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { checkSchema, validationResult } from "express-validator";
 
-import { HandleNewPatient } from "controllers/patient";
+import { HandleNewPatient, HandlePatientBasicInfo } from "controllers/patient";
 
 import { new_patient_schema } from "routes/schemas/patient";
 
@@ -10,6 +10,26 @@ import { logger } from "util/logger";
 import type { API } from "@sem5-webdev/types";
 
 const router = Router();
+
+router.get("/:id", async (req, res: Response<API.Response>) => {
+  const pid = req.params.id;
+  logger(`/patient/${pid}`);
+
+  try {
+    const { err, data } = await HandlePatientBasicInfo(pid);
+
+    if (err) {
+      res.status(400).json({ success: false, err });
+      return;
+    }
+
+    res.status(200).json({ success: true, data });
+  } catch (error) {
+    logger(`Error occured while fetching patient:${pid} basic info`, "error");
+    console.log(error);
+    res.sendStatus(500);
+  }
+});
 
 router.post(
   "/add",

@@ -1,7 +1,7 @@
 import db from "database/pg";
-import { EncryptData } from "util/crypto";
+import { DecryptData, EncryptData } from "util/crypto";
 
-import type { API } from "@sem5-webdev/types";
+import type { API, DB } from "@sem5-webdev/types";
 
 const HandleNewPatient = async (
   data: API.Patient.RegistrationForm
@@ -18,4 +18,22 @@ const HandleNewPatient = async (
   return pid;
 };
 
-export { HandleNewPatient };
+const HandlePatientBasicInfo = async (
+  pid: string
+): Promise<{ data?: DB.Patient.Data; err?: string }> => {
+  const id = parseInt(pid);
+  if (isNaN(id)) {
+    return { err: "ID is not a number" };
+  }
+
+  const query = await db.query("SELECT * FROM patients.info WHERE id=$1", [id]);
+  if (query.rowCount === 0) {
+    return { err: "No patient found" };
+  }
+
+  const encrypted: DB.Encrypted = query.rows[0];
+  const data = DecryptData<DB.Patient.Data>(encrypted.data);
+  return { data };
+};
+
+export { HandleNewPatient, HandlePatientBasicInfo };
