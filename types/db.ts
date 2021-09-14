@@ -27,7 +27,7 @@ export namespace DB {
     export interface Auth {
       id: number;
       username: string;
-      password: string;
+      pwd: string;
     }
 
     /**

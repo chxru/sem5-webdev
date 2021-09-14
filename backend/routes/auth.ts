@@ -1,5 +1,4 @@
-// @ts-nocheck
-import express, { Router } from "express";
+import { Request, Response, Router } from "express";
 import { checkSchema, validationResult } from "express-validator";
 
 import {
@@ -19,7 +18,7 @@ const router = Router();
 router.post(
   "/login",
   checkSchema(signin_schema),
-  async (req: express.Request, res: express.Response<API.LoginResponse>) => {
+  async (req: Request, res: Response<API.Response<API.Auth.LoginResponse>>) => {
     logger("/auth/login");
 
     // schema validation
@@ -35,24 +34,30 @@ router.post(
     }
 
     try {
-      const { user, access_token, refresh_token, err } = await HandleLogin(
+      const { user, access_token, refresh_token } = await HandleLogin(
         req.body.username,
         req.body.password
       );
 
       // send response
-      if (err) {
-        res.status(200).json({ success: false, err: err.toString() });
-      } else {
-        res.status(200).json({
-          success: true,
+      res.status(200).json({
+        success: true,
+        data: {
           user,
           access: access_token,
           refresh: refresh_token,
-        });
-      }
+        },
+      });
     } catch (err) {
-      res.status(500).json({ success: false, err });
+      logger("Error occured while handling user login", "error");
+      console.log(err);
+
+      if (err instanceof Error) {
+        res.status(400).json({ success: false, err: err.message });
+        return;
+      }
+
+      res.sendStatus(500);
     }
   }
 );
@@ -61,63 +66,98 @@ router.post(
 router.post(
   "/create",
   checkSchema(signup_schema),
-  async (req: express.Request, res: express.Response) => {
+  async (
+    req: Request,
+    res: Response<API.Response<{ access_token: string }>>
+  ) => {
+    logger("/auth/create");
+
+    // schema validation
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      // concat array of errors to one string
+      const err = errors
+        .array()
+        .map((i) => `${i.param}: ${i.msg}`)
+        .join("\n");
+      logger("Signup schema validation failed", "info");
+      return res.status(400).json({ success: false, err });
     }
 
     try {
-      const { access_token, refresh_token, err } = await HandleRegister(
-        req.body
-      );
+      const { access_token, refresh_token } = await HandleRegister(req.body);
 
       // send response
-      if (err) {
-        res.status(503).json({ err: err.toString() });
-      } else {
-        // set refresh token in cookie
-        res.cookie("token", refresh_token, {
-          domain: "localhost:3001",
-          httpOnly: true,
-          maxAge: 60 * 60 * 24 * 7, // 7 days
-          secure: true, // https or localhost
-        });
-        res.status(200).json(access_token);
-      }
-    } catch (error) {
+      // set refresh token in cookie
+      res.cookie("token", refresh_token, {
+        domain: "localhost:3001",
+        httpOnly: true,
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+        secure: true, // https or localhost
+      });
+      res.status(200).json({ success: true, data: { access_token } });
+    } catch (err) {
       logger(`Error occured while creating user ${req.body.email}`, "error");
-      console.error(error);
+
+      if (err instanceof Error) {
+        res.status(400).json({ success: false, err: err.message });
+        return;
+      }
+
+      console.error(err);
       res.sendStatus(500);
     }
   }
 );
 
 // /auth/refresh endpoint
-router.post("/refresh", async (req, res) => {
-  logger("/auth/refresh");
+router.post(
+  "/refresh",
+  async (
+    req: Request,
+    res: Response<
+      API.Response<{ access_token: string; user: API.Auth.UserData }>
+    >
+  ) => {
+    logger("/auth/refresh");
 
-  // 403 if token not found
-  const token = req.body.refresh_token;
-  if (!token) {
-    logger("Token not found in req body", "info");
-    res.sendStatus(403);
-    return;
-  }
-
-  try {
-    const { ok, access, user } = await HandleRefreshToken(token);
-    if (!ok || !access) {
-      logger(`Token status is ${ok}`, "info");
+    // 403 if token not found
+    const token = req.body.refresh_token;
+    if (!token) {
+      logger("Token not found in req body");
       res.sendStatus(403);
       return;
     }
 
-    logger("Token refreshed", "success");
-    res.status(200).json({ access_token: access, user });
-  } catch (error) {
-    res.sendStatus(403);
+    try {
+      const { ok, access, user } = await HandleRefreshToken(token);
+
+      if (!ok || !access) {
+        logger(`Token status is ${ok}`, "info");
+        res.status(400).json({
+          success: false,
+          err: "Invalid data to refresh access token",
+        });
+        return;
+      }
+
+      if (!user) {
+        res.status(400).json({ success: false, err: "No matching user found" });
+        return;
+      }
+
+      logger("Token refreshed", "success");
+
+      res
+        .status(200)
+        .json({ success: true, data: { access_token: access, user } });
+    } catch (err) {
+      logger("Error occured in /auth/refresh", "error");
+      console.log(err);
+
+      res.sendStatus(500);
+    }
   }
-});
+);
 
 export default router;

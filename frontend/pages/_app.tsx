@@ -17,11 +17,13 @@ function MyApp({ Component, pageProps }: AppProps) {
   const notify = useContext(NotifyContext);
 
   const [accessToken, setaccessToken] = useState<string>();
-  const [userData, setuserData] = useState<API.UserData>();
-  const onSignIn = (token: string, user: API.UserData) => {
+  const [userData, setuserData] = useState<API.Auth.UserData>();
+
+  const onSignIn = (token: string, user: API.Auth.UserData) => {
     setaccessToken(token);
     setuserData(user);
   };
+
   const onSignOut = () => {
     setaccessToken(undefined);
     setuserData({
@@ -36,26 +38,28 @@ function MyApp({ Component, pageProps }: AppProps) {
     try {
       const res = await fetch("/api/auth/refresh", { method: "POST" });
       if (res.ok) {
-        const data = await res.json();
+        const { success, err, data } = (await res.json()) as API.Response<{
+          access_token: string;
+          user: API.Auth.UserData;
+        }>;
 
-        if (!!data.access_token) {
+        if (!success) {
+          notify.NewAlert({
+            msg: "Error occured while refreshing token",
+            description: err,
+            status: "info",
+          });
+        }
+
+        if (data?.access_token) {
           setaccessToken(data.access_token);
         }
-        if (!!data.user) {
+        if (data?.user) {
           setuserData(data.user);
         }
-        return;
-      }
-
-      if (res.status !== 401) {
-        notify.NewAlert({
-          msg: "Credentials expired",
-          description: "Please login again",
-          status: "info",
-        });
       }
     } catch (error) {
-      // in exceptions, pass silently
+      console.warn(error);
     }
   };
 
