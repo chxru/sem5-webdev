@@ -1,6 +1,6 @@
-// @ts-nocheck
 import express from "express";
 import cors from "cors";
+
 import { logger } from "util/logger";
 
 // routes
@@ -27,7 +27,7 @@ const PORT = process.env.BACKEND_PORT;
     await app.listen(PORT);
     logger(`Backend listening at port ${PORT}`, "success");
   } catch (error) {
-    logger(`Could not start server. ${error.message}`, "error");
-    console.error(error.message);
+    logger("Error occured while backend starts", "error");
+    console.log(error);
   }
 })();
