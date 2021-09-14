@@ -5,6 +5,7 @@ import { ChakraProvider } from "@chakra-ui/react";
 
 import Sidebar from "components/sidebar";
 import Overlay from "components/overlay";
+import Splash from "components/splash";
 
 import LoginPage from "pages/login";
 
@@ -16,6 +17,7 @@ import type { API } from "@sem5-webdev/types";
 function MyApp({ Component, pageProps }: AppProps) {
   const notify = useContext(NotifyContext);
 
+  const [loading, setloading] = useState<boolean>(true);
   const [accessToken, setaccessToken] = useState<string>();
   const [userData, setuserData] = useState<API.Auth.UserData>();
 
@@ -65,6 +67,7 @@ function MyApp({ Component, pageProps }: AppProps) {
 
   const onMount = async () => {
     await RefreshAccessToken();
+    setloading(false);
 
     // refresh access token for every 15mins
     setInterval(async () => {
@@ -85,7 +88,9 @@ function MyApp({ Component, pageProps }: AppProps) {
         value={{ token: accessToken, user: userData, onSignIn, onSignOut }}
       >
         <Overlay>
-          {!!accessToken ? (
+          {loading ? (
+            <Splash />
+          ) : !!accessToken ? (
             <Sidebar>
               <Component {...pageProps} />
             </Sidebar>
