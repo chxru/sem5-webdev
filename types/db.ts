@@ -53,6 +53,7 @@ export namespace DB {
      * @interface Data
      */
     export interface Data {
+      [key: string]: any;
       id: number;
       fname: string;
       lname: string;
