@@ -44,7 +44,12 @@ const ApiRequest = async <T,>({
 
     if (!response.ok) {
       const { err } = await response.json();
-      console.log(err);
+      // schema validation errors
+      if (response.status === 400) {
+        let e = err.split("\n")[0];
+        e = e.split(":").pop().trim();
+        return { success: false, err: e };
+      }
       return { success: false, err };
     }
 
