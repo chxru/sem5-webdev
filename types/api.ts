@@ -52,5 +52,16 @@ export namespace API {
       extends Omit<DB.Patient.Data, "id" | "created_at"> {
       [key: string]: any;
     }
+
+    /**
+     * Format what search request outputs
+     *
+     * @export
+     * @interface SearchDetails
+     */
+    export interface SearchDetails {
+      id: number;
+      full_name: string;
+    }
   }
 }
