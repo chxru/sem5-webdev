@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "cross-env NODE_PATH=./ nodemon -r dotenv/config server.ts dotenv_config_path=../.env",
     "build": "cross-env NODE_PATH=./ tsc --project ./",
-    "dbinit": "node database/boot/boot.js"
+    "dbinit": "node database/boot.js"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.0",

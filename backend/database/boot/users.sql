@@ -30,8 +30,3 @@ create table if not exists users.tokens(
 
 -- @block create complex index for user.tokens
 create index if not exists id_token_idx on users.tokens (id, token);
-
--- @block create trigger to update user.data on change
-create trigger onUpdate before
-update
-  on users.data for each row execute procedure update_timestamp();
