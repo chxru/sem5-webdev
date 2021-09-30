@@ -40,7 +40,7 @@ function MyApp({ Component, pageProps }: AppProps) {
 
   const FetchCount = async () => {
     try {
-      const res = await fetch("api/auth/count");
+      const res = await fetch("/api/auth/count");
 
       if (!res.ok) {
         throw new Error("res-not-okay");
