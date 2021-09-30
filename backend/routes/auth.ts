@@ -5,6 +5,7 @@ import {
   HandleLogin,
   HandleRefreshToken,
   HandleRegister,
+  GetUserCount,
 } from "controllers/auth";
 import { signin_schema, signup_schema } from "routes/schemas/auth";
 
@@ -66,10 +67,7 @@ router.post(
 router.post(
   "/create",
   checkSchema(signup_schema),
-  async (
-    req: Request,
-    res: Response<API.Response<{ access_token: string }>>
-  ) => {
+  async (req: Request, res: Response<API.Response<API.Auth.LoginResponse>>) => {
     logger("/auth/create");
 
     // schema validation
@@ -86,16 +84,17 @@ router.post(
 
     try {
       const { access_token, refresh_token } = await HandleRegister(req.body);
+      const { id, fname, lname, username } = req.body;
 
       // send response
-      // set refresh token in cookie
-      res.cookie("token", refresh_token, {
-        domain: "localhost:3001",
-        httpOnly: true,
-        maxAge: 60 * 60 * 24 * 7, // 7 days
-        secure: true, // https or localhost
+      res.status(200).json({
+        success: true,
+        data: {
+          user: { id, fname, lname, email: username },
+          access: access_token,
+          refresh: refresh_token,
+        },
       });
-      res.status(200).json({ success: true, data: { access_token } });
     } catch (err) {
       logger(`Error occured while creating user ${req.body.email}`, "error");
 
@@ -159,5 +158,15 @@ router.post(
     }
   }
 );
+
+router.get("/count", async (req, res) => {
+  try {
+    const count = await GetUserCount();
+    res.send(count);
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(500);
+  }
+});
 
 export default router;

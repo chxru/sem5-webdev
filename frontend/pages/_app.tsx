@@ -13,11 +13,13 @@ import AuthContext from "contexts/auth-context";
 import NotifyContext from "contexts/notify-context";
 
 import type { API } from "@sem5-webdev/types";
+import RegisterPage from "./register";
 
 function MyApp({ Component, pageProps }: AppProps) {
   const notify = useContext(NotifyContext);
 
   const [loading, setloading] = useState<boolean>(true);
+  const [count, setcount] = useState<number>();
   const [accessToken, setaccessToken] = useState<string>();
   const [userData, setuserData] = useState<API.Auth.UserData>();
 
@@ -34,6 +36,22 @@ function MyApp({ Component, pageProps }: AppProps) {
       lname: "",
       email: "",
     });
+  };
+
+  const FetchCount = async () => {
+    try {
+      const res = await fetch("api/auth/count");
+
+      if (!res.ok) {
+        throw new Error("res-not-okay");
+      }
+
+      const n = await res.text();
+      setcount(parseInt(n));
+    } catch (error) {
+      console.error(error);
+      setcount(0);
+    }
   };
 
   const RefreshAccessToken = async () => {
@@ -66,6 +84,10 @@ function MyApp({ Component, pageProps }: AppProps) {
   };
 
   const onMount = async () => {
+    // check database has any records for users
+    // if no users are in db, promote register page
+    await FetchCount();
+
     await RefreshAccessToken();
     setloading(false);
 
@@ -94,6 +116,8 @@ function MyApp({ Component, pageProps }: AppProps) {
             <Sidebar>
               <Component {...pageProps} />
             </Sidebar>
+          ) : count === 0 ? (
+            <RegisterPage />
           ) : (
             <LoginPage />
           )}
