@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "debug": "cross-env NODE_OPTIONS='--inspect' next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -26,6 +27,7 @@
     "@types/cookie": "^0.4.1",
     "@types/node-fetch": "^2.5.12",
     "@types/react": "17.0.14",
+    "cross-env": "^7.0.3",
     "eslint": "7.30.0",
     "eslint-config-next": "11.0.1",
     "prettier": "2.3.2",
