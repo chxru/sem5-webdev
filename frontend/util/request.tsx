@@ -43,19 +43,26 @@ const ApiRequest = async <T,>({
     });
 
     if (!response.ok) {
-      const { err } = await response.json();
-      // schema validation errors
-      if (response.status === 400) {
-        let e = err.split("\n")[0];
-        e = e.split(":").pop().trim();
-        return { success: false, err: e };
+      try {
+        const { err } = await response.json();
+        // schema validation errors
+        if (response.status === 400) {
+          let e = err.split("\n")[0];
+          e = e.split(":").pop().trim();
+          return { success: false, err: e };
+        }
+        return { success: false, err };
+      } catch (error) {
+        console.log(response.status);
+        console.log(error);
+        return { success: false, err: "Unknown error" };
       }
-      return { success: false, err };
     }
 
     const data: T = await response.json();
     return { success: true, data };
   } catch (error: any) {
+    console.log(error);
     return { success: false, err: error };
   }
 };
