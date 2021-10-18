@@ -3,7 +3,22 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 
 import { Container, Flex, Heading, SimpleGrid } from "@chakra-ui/layout";
-import { Text } from "@chakra-ui/react";
+import {
+  Accordion,
+  AccordionButton,
+  AccordionIcon,
+  AccordionItem,
+  AccordionPanel,
+  Button,
+  Tab,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
+  Text,
+} from "@chakra-ui/react";
+
+import BedTicket from "components/bedticket/view";
 
 import AuthContext from "contexts/auth-context";
 import NotifyContext from "contexts/notify-context";
@@ -17,6 +32,7 @@ interface CardProps {
   title: string;
   value?: string;
 }
+
 const ProfileCard: React.FC<CardProps> = ({ title, value }) => {
   return (
     <Flex direction="column" ml={6} mt={4}>
@@ -40,6 +56,7 @@ const ProfileView: NextPage = () => {
   );
 
   const [patient, setpatientData] = useState<DB.Patient.Data>();
+  const [creatingBD, setcreatingBD] = useState<boolean>(false);
 
   const FetchPatientInfo = async () => {
     let { success, data, err } = await ApiRequest<DB.Patient.Data>({
@@ -72,6 +89,38 @@ const ProfileView: NextPage = () => {
     }
 
     setpatientData(data);
+  };
+
+  const CreateBedTicket = async () => {
+    setcreatingBD(true);
+
+    const { success, err } = await ApiRequest({
+      path: `bedtickets/new/${router.query.id}`,
+      method: "POST",
+      token: auth.token,
+    });
+
+    console.log(err);
+
+    if (!success || err) {
+      notify.NewAlert({
+        msg: "Creating new bed ticket failed",
+        description: typeof err === "string" ? err : "",
+        status: "error",
+      });
+
+      return;
+    }
+
+    notify.NewAlert({
+      msg: "Bed ticket successfully created",
+      status: "success",
+    });
+
+    // re-fetch patient details
+    await FetchPatientInfo();
+
+    setcreatingBD(false);
   };
 
   // onMount
@@ -116,6 +165,89 @@ const ProfileView: NextPage = () => {
               <ProfileCard title="Email" value={patient?.email} />
               <ProfileCard title="Contact Number" value={patient?.tp} />
             </SimpleGrid>
+          </Container>
+
+          <Container
+            maxW="4xl"
+            mt="28px"
+            mb={10}
+            px="35px"
+            py="21px"
+            shadow="md"
+            bg="white"
+          >
+            <Heading my="20px" size="md" fontWeight="semibold">
+              Bed Ticket
+            </Heading>
+
+            <Tabs>
+              <TabList>
+                <Tab>Active</Tab>
+                <Tab>History</Tab>
+              </TabList>
+
+              <TabPanels>
+                <TabPanel>
+                  {patient?.current_bedticket ? (
+                    <BedTicket
+                      bid={patient.current_bedticket}
+                      pid={id}
+                      state={setpatientData}
+                    />
+                  ) : (
+                    <>
+                      <Text>Patient has no active bed ticket record</Text>
+                      <Button
+                        colorScheme="facebook"
+                        mt={2}
+                        onClick={CreateBedTicket}
+                        disabled={creatingBD}
+                      >
+                        Create Bed Ticket
+                      </Button>
+                    </>
+                  )}
+                </TabPanel>
+                <TabPanel>
+                  <Accordion allowToggle allowMultiple>
+                    {Array.isArray(patient?.bedtickets) &&
+                      patient?.bedtickets
+                        .filter((b) => b.id !== patient.current_bedticket)
+                        .map((h) => {
+                          return (
+                            <AccordionItem key={"his" + h.id.toString()}>
+                              {({ isExpanded }) => (
+                                <>
+                                  <AccordionButton>
+                                    <Text>
+                                      {new Date(
+                                        h.admission_date
+                                      ).toLocaleDateString()}{" "}
+                                      -{" "}
+                                      {h.discharge_date
+                                        ? new Date(
+                                            h.discharge_date
+                                          ).toLocaleDateString()
+                                        : "N/A"}
+                                    </Text>
+                                    <AccordionIcon />
+                                  </AccordionButton>
+                                  <AccordionPanel>
+                                    {isExpanded ? (
+                                      <BedTicket bid={h.id} pid={id} />
+                                    ) : (
+                                      <Text>Loading</Text>
+                                    )}
+                                  </AccordionPanel>
+                                </>
+                              )}
+                            </AccordionItem>
+                          );
+                        })}
+                  </Accordion>
+                </TabPanel>
+              </TabPanels>
+            </Tabs>
           </Container>
         </Flex>
       </Container>

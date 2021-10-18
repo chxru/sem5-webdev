@@ -72,8 +72,23 @@ export namespace DB {
         y: number;
         dic: string;
       };
+      current_bedticket?: number;
+      bedtickets: {
+        admission_date: number;
+        discharge_date?: number;
+        id: number;
+      }[];
       created_by: number;
       created_at: string;
+    }
+
+    export interface BedTicketEntry {
+      id: number;
+      category: "diagnosis" | "report" | "other";
+      type: string;
+      note: string;
+      attachments: string[];
+      created_at: Date;
     }
   }
 
