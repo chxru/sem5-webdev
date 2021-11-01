@@ -13,7 +13,13 @@ import { DB } from "@sem5-webdev/types";
  */
 export default async (
   bid: string,
-  data: DB.Patient.BedTicketEntry
+  data: DB.Patient.BedTicketEntry,
+  files:
+    | Express.Multer.File[]
+    | {
+        [fieldname: string]: Express.Multer.File[];
+      }
+    | undefined
 ): Promise<{ err?: string }> => {
   const trx = await db.connect();
   try {
@@ -35,6 +41,20 @@ export default async (
       records === null
         ? [] // in fresh bed tickets records is null
         : DecryptData<DB.Patient.BedTicketEntry[]>(records);
+
+    // adding attachment data
+    data.attachments = [];
+    // only supports "array of files"
+    if (Array.isArray(files)) {
+      files.forEach((f) => {
+        data.attachments.push({
+          fileName: f.filename,
+          originalName: f.originalname,
+          size: f.size,
+          mimetype: f.mimetype,
+        });
+      });
+    }
 
     // insert new entry to saved array
     decrypted.unshift({

@@ -87,7 +87,12 @@ export namespace DB {
       category: "diagnosis" | "report" | "other";
       type: string;
       note: string;
-      attachments: string[];
+      attachments: {
+        originalName: string;
+        fileName: string;
+        size: number;
+        mimetype: string;
+      }[];
       created_at: Date;
     }
   }
