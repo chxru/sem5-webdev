@@ -1,11 +1,14 @@
 import type { API } from "@sem5-webdev/types";
+import { logger } from "./logger";
 
 interface request {
   path: string;
   method: "GET" | "POST";
-  obj?: {
-    [key: string]: any;
-  };
+  obj?:
+    | {
+        [key: string]: any;
+      }
+    | FormData;
   token?: string;
 }
 
@@ -27,19 +30,27 @@ const ApiRequest = async <T,>({
   obj,
   token,
 }: request): Promise<API.Response<T>> => {
+  logger(`url: ${method} ${path}, obj: ${obj}, hasToken: ${!!token}`);
+
   // access token is required
   if (!token) {
     return { success: false, err: "Token is missing" };
   }
 
   try {
+    // setup headers
+    const headers = new Headers({});
+
+    if (method == "GET" || !(obj instanceof FormData)) {
+      headers.append("Content-Type", "application/json;charset=utf-8");
+    }
+    headers.append("Authorization", token);
+
     // send requests to next api as a post request
     const response = await fetch(`/api/${path}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json;charset=utf-8",
-      },
-      body: JSON.stringify({ ...obj, token, method }),
+      method,
+      headers,
+      body: obj instanceof FormData ? obj : JSON.stringify(obj),
     });
 
     if (!response.ok) {

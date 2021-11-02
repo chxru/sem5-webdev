@@ -1,9 +1,10 @@
 /* eslint-disable no-console */
 import { NextApiRequest, NextApiResponse } from "next";
 import * as jwt from "jsonwebtoken";
-import fetch, { RequestInit } from "node-fetch";
+import fetch, { Headers } from "node-fetch";
 
 import type { API } from "@sem5-webdev/types";
+import { logger } from "util/logger";
 
 const VerifyJWT = async (token: string) => {
   return new Promise<void>((resolve, reject) => {
@@ -28,15 +29,14 @@ export default async function handler(
   res: NextApiResponse<API.Response>
 ) {
   const { slug } = req.query;
-  const body = req.body;
-  const { token, method } = body;
+  const token = req.headers.authorization;
 
-  // delete unwanted fields in req.body before sending to backend
-  delete body["token"];
-  delete body["method"];
-
+  // verify jwt token is valid
   try {
-    // verify jwt token is valid
+    if (!token) {
+      throw new Error("Missing token");
+    }
+
     await VerifyJWT(token);
   } catch (error) {
     console.log(error);
@@ -45,21 +45,29 @@ export default async function handler(
   }
 
   try {
-    // fetch request option
-    const options: RequestInit = {
-      method,
-      headers: {
-        "Content-Type": "application/json;charset=utf-8",
-      },
-    };
-
-    // insert body (if there is) to request if method is POST
-    if (method === "POST" && Object.keys(body).length) {
-      options.body = JSON.stringify(body);
+    const headers = new Headers();
+    if (req.headers["content-type"]) {
+      headers.append(
+        "Content-Type",
+        req.headers["content-type"] ?? "application/json;charset=utf-8"
+      );
     }
+    headers.append("Authorization", token);
+
+    // Is there a better way to differ FormData and JSON? 🤔
+    const body =
+      req.body.toString() === "[object FormData]"
+        ? req.body
+        : Object.entries(req.body).length != 0
+        ? JSON.stringify(req.body)
+        : undefined;
 
     const url = typeof slug === "string" ? slug : slug.join("/");
-    const response = await fetch(`http://localhost:3001/${url}`, options);
+    const response = await fetch(`http://localhost:3001/${url}`, {
+      method: req.method,
+      headers,
+      body,
+    });
 
     if (!response.ok) {
       // 400 => schema validation failed
@@ -82,6 +90,7 @@ export default async function handler(
     const { data } = (await response.json()) as API.Response;
     res.status(200).json(data || {});
   } catch (error) {
+    logger("Error occured in internal server", "error");
     console.error(error);
 
     res.status(502);
