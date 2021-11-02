@@ -54,19 +54,14 @@ export default async function handler(
     }
     headers.append("Authorization", token);
 
-    // Is there a better way to differ FormData and JSON? 🤔
     const body =
-      req.body.toString() === "[object FormData]"
-        ? req.body
-        : Object.entries(req.body).length != 0
-        ? JSON.stringify(req.body)
-        : undefined;
+      typeof req.body === "object" ? JSON.stringify(req.body) : req.body;
 
     const url = typeof slug === "string" ? slug : slug.join("/");
     const response = await fetch(`http://localhost:3001/${url}`, {
       method: req.method,
       headers,
-      body,
+      body: req.method == "POST" ? body : undefined,
     });
 
     if (!response.ok) {
