@@ -2,9 +2,9 @@ import React from "react";
 import type { API } from "@sem5-webdev/types";
 
 const AuthContext = React.createContext<{
-  user?: API.UserData;
+  user?: API.Auth.UserData;
   token?: string;
-  onSignIn: (token: string, user: API.UserData) => void;
+  onSignIn: (token: string, user: API.Auth.UserData) => void;
   onSignOut: () => void;
 }>({
   onSignIn: () => {},
