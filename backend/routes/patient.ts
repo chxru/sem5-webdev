@@ -20,7 +20,6 @@ const router = Router();
 
 router.get("/:id", async (req, res: Response<API.Response>) => {
   const pid = req.params.id;
-  logger(`/patient/${pid}`);
 
   try {
     const { err, data } = await HandlePatientBasicInfo(pid);
@@ -42,8 +41,6 @@ router.post(
   "/add",
   checkSchema(new_patient_schema),
   async (req: Request, res: Response<API.Response>) => {
-    logger("/patient/add");
-
     // schema validation
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -76,8 +73,6 @@ router.post(
   "/search",
   checkSchema(search_patient_schema),
   async (req: Request, res: Response<API.Response>) => {
-    logger("/patient/search");
-
     // schema validation
     const errors = validationResult(req);
     if (!errors.isEmpty()) {

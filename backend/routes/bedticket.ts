@@ -36,8 +36,6 @@ router.post(
   "/new/:id",
   checkSchema(new_bedticket_schemea),
   async (req: Request, res: Response<API.Response>) => {
-    logger(`/bedticket/new/${req.params.id}`);
-
     // schema validation
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -73,8 +71,6 @@ router.post(
   "/close/:id",
   checkSchema(close_bedticket_schema),
   async (req: Request, res: Response<API.Response>) => {
-    logger(`/bedticket/close/${req.params.id}`);
-
     // schema validation
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -111,7 +107,6 @@ router.post(
   upload.array("files"),
   checkSchema(new_entry_schema),
   async (req: Request, res: Response<API.Response>) => {
-    logger(`/bedticket/${req.params.id}`);
     console.log(req.body);
 
     // schema validation
@@ -149,8 +144,6 @@ router.get(
   "/:id",
   checkSchema(read_entry_schema),
   async (req: Request, res: Response<API.Response>) => {
-    logger(`/bedticket/${req.params.id} GET`);
-
     // schema validation
     const errors = validationResult(req);
     if (!errors.isEmpty()) {

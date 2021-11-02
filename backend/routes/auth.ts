@@ -20,8 +20,6 @@ router.post(
   "/login",
   checkSchema(signin_schema),
   async (req: Request, res: Response<API.Response<API.Auth.LoginResponse>>) => {
-    logger("/auth/login");
-
     // schema validation
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -68,8 +66,6 @@ router.post(
   "/create",
   checkSchema(signup_schema),
   async (req: Request, res: Response<API.Response<API.Auth.LoginResponse>>) => {
-    logger("/auth/create");
-
     // schema validation
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -118,8 +114,6 @@ router.post(
       API.Response<{ access_token: string; user: API.Auth.UserData }>
     >
   ) => {
-    logger("/auth/refresh");
-
     // 403 if token not found
     const token = req.body.refresh_token;
     if (!token) {
