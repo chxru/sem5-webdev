@@ -47,7 +47,7 @@ const ApiRequest = async <T,>({
     headers.append("Authorization", token);
 
     // send requests to next api as a post request
-    const response = await fetch(`/api/${path}`, {
+    const response = await fetch(`http://localhost:3001/${path}`, {
       method,
       headers,
       body: obj instanceof FormData ? obj : JSON.stringify(obj),
@@ -70,8 +70,8 @@ const ApiRequest = async <T,>({
       }
     }
 
-    const data: T = await response.json();
-    return { success: true, data };
+    const { success, data, err } = (await response.json()) as API.Response<T>;
+    return { success, data, err };
   } catch (error: any) {
     console.log(error);
     return { success: false, err: error };

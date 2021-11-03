@@ -1,3 +1,9 @@
+/*
+  Depricated!
+  Now requests goes to backend directly instead through next js server.
+  Check this commit for more info
+*/
+
 /* eslint-disable no-console */
 import { NextApiRequest, NextApiResponse } from "next";
 import * as jwt from "jsonwebtoken";
