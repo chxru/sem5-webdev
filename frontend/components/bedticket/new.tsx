@@ -5,6 +5,7 @@ import {
   FormControl,
   FormHelperText,
   FormLabel,
+  Input,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -89,9 +90,8 @@ const NewRecord: React.FC<newProps> = ({ isOpen, onClose, bid, refresh }) => {
     }
 
     formData.append("category", value.category);
+    formData.append("type", value.type);
     formData.append("note", value.note);
-
-    console.log(formData);
 
     const { success, err } = await ApiRequest({
       path: `bedtickets/${bid}`,
@@ -135,7 +135,7 @@ const NewRecord: React.FC<newProps> = ({ isOpen, onClose, bid, refresh }) => {
         <form onSubmit={handleSubmit(OnSubmit)}>
           <ModalBody>
             <FormControl isRequired>
-              <FormLabel>Entry type</FormLabel>
+              <FormLabel>Category</FormLabel>
               <Select
                 placeholder="Select record type"
                 {...register("category", { required: true })}
@@ -147,6 +147,11 @@ const NewRecord: React.FC<newProps> = ({ isOpen, onClose, bid, refresh }) => {
               {errors.type && (
                 <FormHelperText>This field is required</FormHelperText>
               )}
+            </FormControl>
+
+            <FormControl isRequired>
+              <FormLabel>Entry Type</FormLabel>
+              <Input {...register("type", { required: true })} />
             </FormControl>
 
             <FormControl>
