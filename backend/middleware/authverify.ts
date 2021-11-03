@@ -1,35 +1,31 @@
 import express from "express";
 import * as jwt from "jsonwebtoken";
+import { VerifyJWT } from "util/jwt";
+import { logger } from "util/logger";
 
 const verifyToken = (
   req: express.Request,
   res: express.Response,
   next: express.NextFunction
 ) => {
-  // skip token verification for /auth/login
-  if (req.path === "/auth/login") {
+  // skip token verification for /auth
+  if (req.path.startsWith("/auth")) {
     next();
     return;
   }
 
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1];
+  const token = req.headers["authorization"];
 
   if (!token) {
-    console.log(req.headers);
+    logger(`Token is missing for request ${req.path}`);
     return res.sendStatus(403);
   }
 
-  jwt.verify(token, process.env.JWT_TOKEN as string, (err, user) => {
-    console.log(user, err);
-
-    if (err) {
-      console.log(err);
-      return res.sendStatus(403);
-    }
-
+  if (VerifyJWT(token)) {
     next();
-  });
+  } else {
+    return res.sendStatus(403);
+  }
 };
 
 export { verifyToken };

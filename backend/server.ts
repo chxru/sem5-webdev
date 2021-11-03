@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import morgan from "morgan";
 
+import { verifyToken } from "middleware/authverify";
 import { logger } from "util/logger";
 
 // routes
@@ -14,7 +15,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({ origin: "http://localhost:3000" }));
 app.use(morgan("dev"));
-// app.use(verifyToken);
+app.use(verifyToken);
 
 app.use("/auth", authroutes);
 app.use("/patient", patientroutes);
