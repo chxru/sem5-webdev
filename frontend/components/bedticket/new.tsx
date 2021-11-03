@@ -82,10 +82,21 @@ const NewRecord: React.FC<newProps> = ({ isOpen, onClose, bid, refresh }) => {
   });
 
   const OnSubmit = async (value: DB.Patient.BedTicketEntry) => {
+    const formData = new FormData();
+
+    for (const file of acceptedFiles) {
+      formData.append("files", file);
+    }
+
+    formData.append("category", value.category);
+    formData.append("note", value.note);
+
+    console.log(formData);
+
     const { success, err } = await ApiRequest({
       path: `bedtickets/${bid}`,
       method: "POST",
-      obj: value,
+      obj: formData,
       token: auth.token,
     });
 
