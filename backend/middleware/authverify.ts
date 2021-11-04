@@ -9,7 +9,7 @@ const verifyToken = (
   next: express.NextFunction
 ) => {
   // skip token verification for /auth
-  if (req.path.startsWith("/auth")) {
+  if (req.path.startsWith("/auth") || req.path.startsWith("/files")) {
     next();
     return;
   }
