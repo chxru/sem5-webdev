@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import morgan from "morgan";
+import path from "path";
 
 import { verifyToken } from "middleware/authverify";
 import { logger } from "util/logger";
@@ -20,6 +21,11 @@ app.use(verifyToken);
 app.use("/auth", authroutes);
 app.use("/patient", patientroutes);
 app.use("/bedtickets", bedticketRoutes);
+
+app.use(
+  "/files",
+  express.static(path.join(__dirname, "../", "uploads", "bedtickets"))
+);
 
 app.all("*", (req, res) => {
   logger("Request received", "info");
