@@ -105,15 +105,6 @@ const BedTicket: React.FC<bedticketProps> = ({ bid, pid, state }) => {
       return;
     }
 
-    if (!data) {
-      notify.NewAlert({
-        msg: "Request didn't came with expected response",
-        status: "error",
-      });
-
-      return;
-    }
-
     notify.NewAlert({
       msg: "Patient discharged successfully",
       status: "success",
