@@ -16,7 +16,7 @@ import {
 } from "@chakra-ui/react";
 import { FiExternalLink, FiFile } from "react-icons/fi";
 
-import NewRecord from "components/bedticket/new";
+import NewRecord from "components/bedticket/new_record";
 
 import AuthContext from "contexts/auth-context";
 import NotifyContext from "contexts/notify-context";
