@@ -15,12 +15,12 @@ import {
   ModalOverlay,
 } from "@chakra-ui/modal";
 import { Button } from "@chakra-ui/react";
+import { useForm } from "react-hook-form";
 
 import AuthContext from "contexts/auth-context";
 import NotifyContext from "contexts/notify-context";
 
 import { ApiRequest } from "util/request";
-import { useForm } from "react-hook-form";
 
 interface Props {
   isOpen: boolean;
@@ -48,6 +48,7 @@ const NewBedTicketModal: React.FC<Props> = ({
     handleSubmit,
     formState: { errors },
     register,
+    reset,
   } = useForm<FormProps>();
 
   const OnSubmit = async (value: FormProps) => {
@@ -81,6 +82,7 @@ const NewBedTicketModal: React.FC<Props> = ({
     await refresh();
 
     setloading(false);
+    reset();
 
     onClose();
   };
@@ -107,7 +109,7 @@ const NewBedTicketModal: React.FC<Props> = ({
           </ModalBody>
 
           <ModalFooter>
-            <Button colorScheme="facebook" type="submit">
+            <Button colorScheme="facebook" type="submit" disabled={loading}>
               Create bed ticket
             </Button>
             <Button variant="ghost" onClick={onClose}>
