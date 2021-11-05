@@ -16,9 +16,11 @@ import {
   TabPanels,
   Tabs,
   Text,
+  useDisclosure,
 } from "@chakra-ui/react";
 
 import BedTicket from "components/bedticket/view";
+import NewBedTicketModal from "components/bedticket/new_bd";
 
 import AuthContext from "contexts/auth-context";
 import NotifyContext from "contexts/notify-context";
@@ -56,7 +58,12 @@ const ProfileView: NextPage = () => {
   );
 
   const [patient, setpatientData] = useState<DB.Patient.Data>();
-  const [creatingBD, setcreatingBD] = useState<boolean>(false);
+
+  const {
+    isOpen: nbt_isOpen,
+    onOpen: nbt_onOpen,
+    onClose: nbt_onClose,
+  } = useDisclosure();
 
   const FetchPatientInfo = async () => {
     let { success, data, err } = await ApiRequest<DB.Patient.Data>({
@@ -92,7 +99,7 @@ const ProfileView: NextPage = () => {
   };
 
   const CreateBedTicket = async () => {
-    setcreatingBD(true);
+    nbt_onOpen();
 
     const { success, err } = await ApiRequest({
       path: `bedtickets/new/${router.query.id}`,
@@ -119,8 +126,6 @@ const ProfileView: NextPage = () => {
 
     // re-fetch patient details
     await FetchPatientInfo();
-
-    setcreatingBD(false);
   };
 
   // onMount
@@ -139,6 +144,13 @@ const ProfileView: NextPage = () => {
         </title>
         <meta name="description" content="Profile View" />
       </Head>
+
+      <NewBedTicketModal
+        isOpen={nbt_isOpen}
+        onClose={nbt_onClose}
+        refresh={FetchPatientInfo}
+        pid={router.query.id}
+      />
 
       <Container overflowY="auto" maxW="4xl" minH="100vh">
         <Flex align="center" pl={2} mt={5} flexDirection="column">
@@ -200,8 +212,7 @@ const ProfileView: NextPage = () => {
                       <Button
                         colorScheme="facebook"
                         mt={2}
-                        onClick={CreateBedTicket}
-                        disabled={creatingBD}
+                        onClick={nbt_onOpen}
                       >
                         Create Bed Ticket
                       </Button>
