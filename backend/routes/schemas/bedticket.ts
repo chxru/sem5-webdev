@@ -4,6 +4,9 @@ const new_bedticket_schemea: Schema = {
   id: {
     in: "params",
   },
+  bid: {
+    in: "body",
+  },
 };
 
 const close_bedticket_schema: Schema = {

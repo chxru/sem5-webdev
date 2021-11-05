@@ -8,17 +8,36 @@ import { DB } from "@sem5-webdev/types";
  * Create new bed ticket
  *
  * @param {string} pid
+ * @param {string} bid
  * @return {*}  {Promise<{ err?: string }>}
  */
-export default async (pid: string): Promise<{ err?: string }> => {
+export default async (
+  pid: string,
+  bedid: string
+): Promise<{ err?: string }> => {
   const id = parseInt(pid);
   if (isNaN(id)) {
     return { err: "ID is not a number" };
   }
 
+  const bed = parseInt(bedid);
+  if (isNaN(bed)) {
+    return { err: "Bed id is not a number" };
+  }
+
   const trx = await db.connect();
   try {
     await trx.query("BEGIN");
+
+    // check bed is free
+    const q0 = await trx.query(
+      "SELECT pid FROM stats.beds WHERE id=$1 AND pid IS NULL",
+      [bed]
+    );
+
+    if (q0.rowCount != 0) {
+      return { err: `Bed ${bed} already has a patient` };
+    }
 
     // fetch patient data from database
     const q1 = await trx.query("SELECT data FROM patients.info WHERE id=$1", [
@@ -60,8 +79,14 @@ export default async (pid: string): Promise<{ err?: string }> => {
     // updating database
     await trx.query("UPDATE patients.info SET data=$1 WHERE id=$2", [
       encrypted,
-      pid,
+      id,
     ]);
+
+    // upserting stats
+    await trx.query(
+      "INSERT INTO stats.beds (id, pid, bid) VALUES ($3, $1, $2) ON CONFLICT (id) DO UPDATE SET pid=$1, bid=$2 WHERE stats.beds.id=$3",
+      [id, bid, bed]
+    );
 
     // commiting
     await trx.query("COMMIT");

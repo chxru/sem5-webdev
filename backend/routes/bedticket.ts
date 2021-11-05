@@ -49,11 +49,10 @@ router.post(
     }
 
     try {
-      const { err } = await HandleNewBedTicket(req.params.id);
+      const { err } = await HandleNewBedTicket(req.params.id, req.body.bid);
 
       if (err) {
-        res.status(400).json({ success: false, err });
-        return;
+        throw err;
       }
 
       logger("New bed ticket added");
