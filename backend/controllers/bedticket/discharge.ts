@@ -39,6 +39,7 @@ export default async (pid: string): Promise<{ err?: string }> => {
       return { err: "User doesn't have an active bed ticket" };
     }
 
+    const bid = decrypted.current_bedticket;
     // set current bedticket undefined
     decrypted.current_bedticket = undefined;
 
@@ -60,6 +61,11 @@ export default async (pid: string): Promise<{ err?: string }> => {
     await trx.query("UPDATE patients.info SET data=$1 WHERE id=$2", [
       encrypted,
       pid,
+    ]);
+
+    // updating stats.beds
+    await trx.query("UPDATE stats.beds SET pid=NULL, bid=NULL WHERE bid=$1", [
+      bid,
     ]);
 
     // commiting
