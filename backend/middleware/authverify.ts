@@ -16,6 +16,13 @@ const verifyToken = (
 
   const token = req.headers["authorization"];
 
+  // IMPORTANT: This is a temporary bypass for postman
+  // should not be in prod
+  if (token === "POSTMAN") {
+    next();
+    return;
+  }
+
   if (!token) {
     logger(`Token is missing for request ${req.path}`);
     return res.sendStatus(403);
