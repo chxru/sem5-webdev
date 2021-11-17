@@ -97,6 +97,16 @@ export namespace DB {
     }
   }
 
+  export namespace Stats {
+    export interface Beds {
+      id: number;
+      pid?: number;
+      bid?: number;
+      name?: string;
+      updated_on?: number;
+    }
+  }
+
   export interface Encrypted {
     id: number;
     data: string;

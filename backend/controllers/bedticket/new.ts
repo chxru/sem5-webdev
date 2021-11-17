@@ -82,8 +82,8 @@ export default async (
 
     // upserting stats
     await trx.query(
-      "INSERT INTO stats.beds (id, pid, bid) VALUES ($3, $1, $2) ON CONFLICT (id) DO UPDATE SET pid=$1, bid=$2 WHERE stats.beds.id=$3",
-      [id, bid, bed]
+      "INSERT INTO stats.beds (id, pid, bid, name, updated_on) VALUES ($3, $1, $2, $4, $5) ON CONFLICT (id) DO UPDATE SET pid=$1, bid=$2 WHERE stats.beds.id=$3",
+      [id, bid, bed, decrypted.fname + " " + decrypted.lname, Date.now()]
     );
 
     // commiting

@@ -5,5 +5,7 @@ create schema if not exists stats;
 create table if not exists stats.beds(
   id integer primary key,
   pid integer references patients.info(id),
-  bid integer references patients.bedtickets(id)
+  bid integer references patients.bedtickets(id),
+  name text,
+  updated_on text
 );

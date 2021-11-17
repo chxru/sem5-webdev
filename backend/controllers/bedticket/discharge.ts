@@ -61,9 +61,10 @@ export default async (pid: string): Promise<{ err?: string }> => {
     ]);
 
     // updating stats.beds
-    await trx.query("UPDATE stats.beds SET pid=NULL, bid=NULL WHERE bid=$1", [
-      bid,
-    ]);
+    await trx.query(
+      "UPDATE stats.beds SET pid=NULL, bid=NULL, name=NULL, updated_on=$2 WHERE bid=$1",
+      [bid, Date.now()]
+    );
 
     // commiting
     await trx.query("COMMIT");
