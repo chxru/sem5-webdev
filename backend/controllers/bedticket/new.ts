@@ -29,13 +29,11 @@ export default async (
   try {
     await trx.query("BEGIN");
 
-    // check bed is free
-    const q0 = await trx.query(
-      "SELECT pid FROM stats.beds WHERE id=$1 AND pid IS NULL",
-      [bed]
-    );
+    // check bed is free, if pid has a value, return
+    const q0 = await trx.query("SELECT pid FROM stats.beds WHERE id=$1", [bed]);
 
-    if (q0.rowCount != 0) {
+    if (!!q0.rows[0]?.pid) {
+      console.log(q0.rowCount, q0.rows[0]);
       return { err: `Bed ${bed} already has a patient` };
     }
 
