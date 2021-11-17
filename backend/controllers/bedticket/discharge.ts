@@ -43,16 +43,13 @@ export default async (pid: string): Promise<{ err?: string }> => {
     // set current bedticket undefined
     decrypted.current_bedticket = undefined;
 
-    // filter the entry with bid, add discharge timestamp
-    const entry = decrypted.bedtickets.filter(
-      (e) => e.id === decrypted.current_bedticket
-    );
-
-    for (const e of entry) {
-      if (e.id === decrypted.current_bedticket) {
-        e.discharge_date = Date.now();
+    // find the entry with matching bid, add discharge timestamp
+    decrypted.bedtickets = decrypted.bedtickets.map((b) => {
+      if (b.id == bid) {
+        return { ...b, discharge_date: Date.now() };
       }
-    }
+      return b;
+    });
 
     // encrypting updated data
     const encrypted = EncryptData(JSON.stringify(decrypted));
