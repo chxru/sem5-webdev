@@ -1,35 +1,28 @@
 version: "3.7"
 
 services:
-    backend:
-        build: ./backend
-        depends_on:
-            - db
-        restart: always
-        environment:
-            BACKEND_PORT: ${BACKEND_PORT}
-            PGUSER: ${PGUSER}
-            PGHOST: ${PGHOST}
-            PGPASSWORD: ${PGPASSWORD}
-            PGDATABASE: ${PGDATABASE}
-            PGPORT: ${PGPORT}
-        ports:
-            - ${BACKEND_PORT}:${BACKEND_PORT}
-        command: yarn dev
-        volumes:
-            - ./backend:/backend
-
     db:
-        image: postgres:latest
-        restart: always
+        build: ./backend/database
+        restart: unless-stopped
         ports:
-            - ${DB_PORT}:53432
+            - ${PGPORT}:53432
         environment:
             POSTGRES_PASSWORD: ${PGPASSWORD}
             POSTGRES_USER: ${PGUSER}
             POSTGRES_DB: ${PGDATABASE}
         volumes:
             - ee5209-mysql-data:/var/lib/postgresql/data
+
+    pgadmin:
+        image: dpage/pgadmin4
+        restart: unless-stopped
+        environment:
+            PGADMIN_DEFAULT_EMAIL: db@email.com
+            PGADMIN_DEFAULT_PASSWORD: password
+        volumes:
+            - ./pgadmin:/var/lib/pgadmin
+        depends_on:
+            - db
 
 volumes:
     ee5209-mysql-data:
