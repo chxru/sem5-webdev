@@ -64,4 +64,9 @@ export namespace API {
       full_name: string;
     }
   }
+
+  export namespace Stats {
+    export interface Beds
+      extends Pick<DB.Stats.Beds, "id" | "pid" | "updated_on" | "name"> {}
+  }
 }

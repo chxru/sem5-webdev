@@ -10,6 +10,7 @@ import { logger } from "util/logger";
 import authroutes from "routes/auth";
 import patientroutes from "routes/patient";
 import bedticketRoutes from "routes/bedticket";
+import statsRoutes from "routes/stats";
 
 const app = express();
 app.use(express.json());
@@ -21,6 +22,7 @@ app.use(verifyToken);
 app.use("/auth", authroutes);
 app.use("/patient", patientroutes);
 app.use("/bedtickets", bedticketRoutes);
+app.use("/stats", statsRoutes);
 
 app.use(
   "/files",
