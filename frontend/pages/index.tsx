@@ -1,10 +1,70 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Head from "next/head";
-import { Box, Container, Flex, Heading, Text } from "@chakra-ui/react";
+import router from "next/router";
+import {
+  Box,
+  Container,
+  Flex,
+  Heading,
+  IconButton,
+  Table,
+  TableCaption,
+  Tbody,
+  Td,
+  Text,
+  Th,
+  Thead,
+  Tr,
+} from "@chakra-ui/react";
+import { FiExternalLink } from "react-icons/fi";
+
 import AuthContext from "contexts/auth-context";
+import NotifyContext from "contexts/notify-context";
+
+import { ApiRequest } from "util/request";
+
+import { API } from "@sem5-webdev/types";
 
 const IndexPage: React.FC = () => {
-  const authContext = useContext(AuthContext);
+  const auth = useContext(AuthContext);
+  const notify = useContext(NotifyContext);
+
+  const [today, settoday] = useState(new Date());
+  const [bedstats, setbedstats] = useState<API.Stats.Beds[]>([]);
+
+  const FetchStats = async () => {
+    const { success, err, data } = await ApiRequest<API.Stats.Beds[]>({
+      path: "stats/beds",
+      method: "GET",
+      token: auth.token,
+    });
+
+    if (!success || err) {
+      notify.NewAlert({
+        msg: "Search results wasn't success",
+        description: err,
+        status: "error",
+      });
+      return;
+    }
+
+    setbedstats(data?.sort((a, b) => a.id - b.id) ?? []);
+  };
+
+  useEffect(() => {
+    FetchStats();
+
+    // timer
+    const timer = setInterval(() => {
+      settoday(new Date());
+    }, 1000);
+
+    return () => {
+      clearInterval(timer);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <>
       <Head>
@@ -16,7 +76,7 @@ const IndexPage: React.FC = () => {
       <Container overflowY="auto" maxW="4xl">
         <Heading mt={{ base: "0", md: "35px" }} size="md" fontWeight="semibold">
           Welcome{" "}
-          {authContext.user?.fname
+          {auth.user?.fname
             .split("")
             .map((l, i) => (i === 0 ? l.toLocaleUpperCase() : l))
             .join("")}
@@ -30,39 +90,100 @@ const IndexPage: React.FC = () => {
           mt="50px"
         >
           <Box w={{ base: "100%", md: "50%" }} pr="7px">
-            <Text>Admitted patient count</Text>
+            <Text>System clock</Text>
 
-            <Box
+            <Flex
+              direction="column"
               height="200px"
               backgroundColor="white"
               shadow="sm"
               borderRadius="lg"
               mt="25px"
-            ></Box>
+              alignItems="center"
+              justifyContent="center"
+            >
+              <Text fontSize="3xl">
+                {today.toLocaleTimeString("en-US", {
+                  timeStyle: "medium",
+                })}
+              </Text>
+              <Text>
+                {today.toLocaleDateString("en-US", { dateStyle: "full" })}
+              </Text>
+            </Flex>
           </Box>
-          <Box w={{ base: "100%", md: "50%" }} pl="7px">
-            <Text>Patient History</Text>
 
-            <Box
+          <Box w={{ base: "100%", md: "50%" }} pl="7px">
+            <Text>Ward Status</Text>
+
+            <Flex
+              direction="column"
               height="200px"
               backgroundColor="white"
               shadow="sm"
               borderRadius="lg"
               mt="25px"
-            ></Box>
+              alignItems="center"
+              justifyContent="center"
+            >
+              <Text fontSize="3xl">
+                {bedstats.filter((s) => s.pid).length} / 10
+              </Text>
+              <Text>Beds full</Text>
+            </Flex>
           </Box>
         </Flex>
 
         <Box mt="25px">
-          <Text>Patient Table</Text>
+          <Text>Ward Table</Text>
 
           <Box
-            height="200px"
+            minHeight="200px"
             backgroundColor="white"
             shadow="sm"
             borderRadius="lg"
             mt="25px"
-          ></Box>
+          >
+            <Table variant="simple">
+              <TableCaption>Ward tables</TableCaption>
+              <Thead>
+                <Tr>
+                  <Th>Bed ID</Th>
+                  <Th>Patient Name</Th>
+                  <Th>Last Update</Th>
+                  <Th></Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {bedstats.map((s) => (
+                  <Tr key={"p" + s.id}>
+                    <Td>{s.id}</Td>
+                    <Td>{s.name ?? "empty"}</Td>
+                    <Td>
+                      {typeof s.updated_on != undefined
+                        ? new Date(parseInt(s.updated_on)).toLocaleDateString()
+                        : "N/A"}
+                    </Td>
+                    <Td>
+                      {s.pid ? (
+                        <IconButton
+                          variant="ghost"
+                          aria-label="View attachments"
+                          colorScheme="teal"
+                          icon={<FiExternalLink />}
+                          onClick={() => {
+                            router.push(`/patient/${s.pid}`);
+                          }}
+                        />
+                      ) : (
+                        <></>
+                      )}
+                    </Td>
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
+          </Box>
         </Box>
       </Container>
     </>
