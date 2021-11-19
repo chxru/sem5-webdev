@@ -8,12 +8,12 @@ import Overlay from "components/overlay";
 import Splash from "components/splash";
 
 import LoginPage from "pages/login";
+import RegisterPage from "pages/register";
 
 import AuthContext from "contexts/auth-context";
 import NotifyContext from "contexts/notify-context";
 
 import type { API } from "@sem5-webdev/types";
-import RegisterPage from "./register";
 
 function MyApp({ Component, pageProps }: AppProps) {
   const notify = useContext(NotifyContext);
