@@ -11,7 +11,7 @@ services:
             POSTGRES_USER: ${PGUSER}
             POSTGRES_DB: ${PGDATABASE}
         volumes:
-            - ee5209-mysql-data:/var/lib/postgresql/data
+            - ee5209-data:/var/lib/postgresql/data
 
     pgadmin:
         image: dpage/pgadmin4
@@ -25,4 +25,4 @@ services:
             - db
 
 volumes:
-    ee5209-mysql-data:
+    ee5209-data:
