@@ -22,6 +22,12 @@ This is a web application made using react + express js for a hospital ward to m
 5. Postgres : Primary database
 6. Docker
 
+## Requirements
+
+1. Node js
+2. Yarn
+3. Docker
+
 ## Directory Structure
 
 ```
@@ -46,5 +52,7 @@ This is a web application made using react + express js for a hospital ward to m
 
 ## How to start an instance
 
-1. `docker-compose up -d`
-2. Visit `localhost:3000` from browser
+1. Start postgres with `docker-compose up -d`
+2. Start backend `node backend`
+3. Start frontend `node frontend`
+4. Visit `localhost:3000` from browser
